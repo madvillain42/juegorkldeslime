@@ -1,0 +1,18 @@
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Cc]apLogs/
+/[Mm]emoryCaptures/
+/[尝]logs/
+/[🗙]userSettings/
+
+# Configuración de editores
+.vs/
+.vscode/
+*.csproj
+*.sln
+*.slnx
+*.user
+*.userprefs

@@ -1,2 +1,0 @@
-# juegorkldeslime
-polla
