@@ -21,9 +21,9 @@ public class SlimeController : MonoBehaviour
     private bool isTouchingWall = false;
     private bool isTouchingGround = false;
     private float originalGravity;
-    
+
     // -1 = Izquierda, 1 = Derecha. Dirección del viaje actual del Slime
-    private float direccionActualX = 1f; 
+    private float direccionActualX = 1f;
 
     void Start()
     {
@@ -66,17 +66,12 @@ public class SlimeController : MonoBehaviour
         // REGLA DE ORO: Si toca el suelo, ignoramos por completo el estado de la pared.
         if (isTouchingGround)
         {
-            // Decidimos la dirección del salto basándonos en qué mitad de la pantalla está parado.
-            // Si está en la izquierda (X < 0), salta obligatoriamente a la derecha (1).
-            // Si está en la derecha (X > 0), salta obligatoriamente a la izquierda (-1).
             direccionActualX = (transform.position.x < 0) ? 1f : -1f;
 
-            // Separación manual de la pared cercana para evitar micro-choques en las esquinas inferiores
             transform.position = new Vector3(transform.position.x + (direccionActualX * 0.25f), transform.position.y + 0.1f, transform.position.z);
 
             rb.linearVelocity = new Vector2(direccionActualX * baseHorizontalForce, baseVerticalForce * 1.2f);
-            
-            // Apagamos ambos estados para limpiar el despegue
+
             isTouchingGround = false;
             isTouchingWall = false;
             rb.gravityScale = originalGravity;
@@ -85,18 +80,21 @@ public class SlimeController : MonoBehaviour
         }
         else if (isTouchingWall)
         {
-            // ESCALADA PURA EN LA TORRE: Miramos la posición real para decidir el lado contrario
-            direccionActualX = (transform.position.x < 0) ? 1f : -1f;
+            // Si está tocando un obstáculo, direccionActualX ya fue corregida
+            // en OnCollisionEnter2D, así que la respetamos directamente
+            // Solo recalculamos por posición si viene de una pared real (X extremo)
+            bool enParedReal = Mathf.Abs(transform.position.x) > 1.5f;
+            if (enParedReal)
+                direccionActualX = (transform.position.x < 0) ? 1f : -1f;
 
-            // Separación física manual para despegarlo del colisionador de la torre
             transform.position = new Vector3(transform.position.x + (direccionActualX * 0.25f), transform.position.y, transform.position.z);
 
             rb.linearVelocity = new Vector2(direccionActualX * baseHorizontalForce, baseVerticalForce);
-            
+
             isTouchingWall = false;
             rb.gravityScale = originalGravity;
-            
-            Debug.Log($"[Torre - Salto 1] Rebote absoluto hacia X: {direccionActualX}");
+
+            Debug.Log($"[Torre - Salto 1] Rebote hacia X: {direccionActualX}");
         }
         else
         {
@@ -112,17 +110,35 @@ public class SlimeController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isTouchingGround = true;
-            jumpCount = 0; 
+            jumpCount = 0;
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
-            return; // Cortamos aquí para que no ejecute la lógica de pared si toca ambos a la vez
+            return;
         }
 
         // Al impactar una pared (Tag: Wall) - Solo se activa si no está tocando el suelo
         if (collision.gameObject.CompareTag("Wall") && !isTouchingGround)
         {
             isTouchingWall = true;
-            jumpCount = 0; 
-            rb.linearVelocity = Vector2.zero; 
+            jumpCount = 0;
+            rb.linearVelocity = Vector2.zero;
+        }
+
+        // Al impactar un obstáculo - detecta el lado del choque y corrige la dirección
+        if (collision.gameObject.CompareTag("Obstacle") && !isTouchingGround)
+        {
+            Vector2 contactNormal = collision.contacts[0].normal;
+
+            if (contactNormal.x > 0.3f)
+                direccionActualX = 1f;   // Chocó por la izquierda del obstáculo → rebota a la derecha
+            else if (contactNormal.x < -0.3f)
+                direccionActualX = -1f;  // Chocó por la derecha del obstáculo → rebota a la izquierda
+            // Si la normal es vertical (cayó encima) → mantiene la dirección actual
+
+            isTouchingWall = true;
+            jumpCount = 0;
+            rb.linearVelocity = Vector2.zero;
+
+            Debug.Log($"[Obstáculo] Normal: {contactNormal} → Nueva dirección: {direccionActualX}");
         }
     }
 
@@ -144,6 +160,10 @@ public class SlimeController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isTouchingGround = false;
+        }
+        if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            isTouchingWall = false;
         }
     }
 }
