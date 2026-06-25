@@ -38,6 +38,8 @@ public class RuneSystem : MonoBehaviour
         pressAction.canceled += OnPressEnded;
 
         if (runePanel != null) runePanel.SetActive(false);
+
+        Debug.Log("[RuneSystem] Init completado — pressAction bindings: " + pressAction.bindings.Count);
     }
 
     void OnDestroy()
@@ -51,11 +53,17 @@ public class RuneSystem : MonoBehaviour
 
     public void StartChallenge(float timeLimit)
     {
-        if (availableRunes == null || availableRunes.Length == 0) return;
+        if (availableRunes == null || availableRunes.Length == 0)
+        {
+            Debug.LogWarning("[RuneSystem] No hay runas asignadas en Available Runes");
+            return;
+        }
 
         currentRune = availableRunes[Random.Range(0, availableRunes.Length)];
         drawnPoints.Clear();
         IsActive = true;
+
+        Debug.Log($"[RuneSystem] Challenge iniciado — Runa: {currentRune.runeName} | IsActive: {IsActive}");
 
         if (runePanel != null) runePanel.SetActive(true);
         if (runeTargetImage != null && currentRune.displaySprite != null)
@@ -86,14 +94,17 @@ public class RuneSystem : MonoBehaviour
 
     void OnPressStarted(InputAction.CallbackContext ctx)
     {
+        Debug.Log($"[RuneSystem] OnPressStarted — IsActive: {IsActive}");
         if (!IsActive) return;
         drawnPoints.Clear();
         isDrawing = true;
         if (traceRenderer != null) traceRenderer.positionCount = 0;
+        Debug.Log("[RuneSystem] Empezó a dibujar");
     }
 
     void OnPressEnded(InputAction.CallbackContext ctx)
     {
+        Debug.Log($"[RuneSystem] OnPressEnded — IsActive: {IsActive} | isDrawing: {isDrawing} | Puntos: {drawnPoints.Count}");
         if (!IsActive || !isDrawing) return;
         isDrawing = false;
         Evaluate();
@@ -101,10 +112,11 @@ public class RuneSystem : MonoBehaviour
 
     void Evaluate()
     {
+        Debug.Log($"[RuneSystem] Evaluando — Puntos capturados: {drawnPoints.Count}");
         if (drawnPoints.Count < 5) { Fail(); return; }
 
         float score = Compare(drawnPoints, currentRune.templatePoints);
-        Debug.Log($"[Runa] {currentRune.runeName} | Score: {score:F2}");
+        Debug.Log($"[Runa] {currentRune.runeName} | Score: {score:F2} | Threshold: {matchThreshold}");
 
         if (score >= matchThreshold) Success();
         else Fail();
@@ -128,7 +140,7 @@ public class RuneSystem : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < limit)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime; // unscaled para que funcione en slow motion
             if (timerText != null)
                 timerText.text = Mathf.CeilToInt(limit - elapsed).ToString();
             yield return null;

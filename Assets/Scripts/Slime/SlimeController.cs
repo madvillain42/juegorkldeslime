@@ -19,11 +19,14 @@ public class SlimeController : MonoBehaviour
     [Header("Dash")]
     [SerializeField] private float dashForce = 14f;
     [SerializeField] private float dashCooldown = 3f;
-    [SerializeField] private float holdThreshold = 0.3f;       // Segundos para activar el modo dash
-    [SerializeField] private float slowMotionScale = 0.3f;     // Qué tan lento se pone el tiempo
-    [SerializeField] private float dashArrowLength = 1.5f;     // Largo visual de la flecha
-    [SerializeField] private Color auraColorReady = new Color(1f, 0.9f, 0.2f, 1f);   // Amarillo = dash listo
-    [SerializeField] private Color auraColorCooldown = new Color(0.3f, 0.8f, 1f, 1f); // Azul = normal
+    [SerializeField] private float holdThreshold = 0.3f;
+    [SerializeField] private float slowMotionScale = 0.3f;
+    [SerializeField] private float dashArrowLength = 1.5f;
+    [SerializeField] private Color auraColorReady    = new Color(1f, 0.9f, 0.2f, 1f);
+    [SerializeField] private Color auraColorCooldown = new Color(0.3f, 0.8f, 1f, 1f);
+
+    [Header("Botón de Runa")]
+    [SerializeField] private RuneButton runeButton;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -36,13 +39,16 @@ public class SlimeController : MonoBehaviour
     // --- Estado del Dash ---
     private bool dashDisponible = true;
     private float dashCooldownTimer = 0f;
-    private bool estaEnModoDash = false;       // Hold activo esperando dirección
-    private float holdTimer = 0f;              // Cuánto lleva presionado
+    private bool estaEnModoDash = false;
+    private float holdTimer = 0f;
     private bool inputPresionado = false;
     private Vector2 dashDireccion = Vector2.right;
 
     // --- Flecha de dirección ---
     private LineRenderer flechaLine;
+
+    // Propiedad para saber si el modo runa está activo
+    private bool ModoRunaActivo => runeButton != null && runeButton.ModoRunaActivo;
 
     void Start()
     {
@@ -51,7 +57,6 @@ public class SlimeController : MonoBehaviour
         originalGravity = rb.gravityScale;
         transform.localScale = tamañoSlime;
 
-        // Crear LineRenderer para la flecha del dash
         flechaLine = gameObject.AddComponent<LineRenderer>();
         flechaLine.positionCount = 2;
         flechaLine.startWidth = 0.08f;
@@ -61,6 +66,9 @@ public class SlimeController : MonoBehaviour
         flechaLine.endColor = new Color(1f, 0.4f, 0f, 0.9f);
         flechaLine.enabled = false;
 
+        if (runeButton == null)
+            runeButton = FindFirstObjectByType<RuneButton>();
+
         ActualizarAura();
     }
 
@@ -68,13 +76,30 @@ public class SlimeController : MonoBehaviour
     {
         if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Climbing) return;
 
+        // Si el modo runa está activo, bloquear TODO el input del slime
+        if (ModoRunaActivo)
+        {
+            ActualizarBotonRuna();
+            return; // ← Salir aquí, sin salto ni dash
+        }
+
         ManejarCooldownDash();
         ManejarInputDash();
         ManejarSaltoPorTap();
+        ActualizarBotonRuna();
 
-        // Deslizamiento en pared
         if (isTouchingWall && !isTouchingGround && rb.linearVelocity.y < 0)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -wallSlideSpeed);
+    }
+
+    // ─────────────────────────────────────────────
+    //  BOTÓN DE RUNA
+    // ─────────────────────────────────────────────
+    void ActualizarBotonRuna()
+    {
+        if (runeButton == null) return;
+        bool enElAire = !isTouchingWall && !isTouchingGround;
+        runeButton.SetBotonDisponible(enElAire);
     }
 
     // ─────────────────────────────────────────────
@@ -84,7 +109,7 @@ public class SlimeController : MonoBehaviour
     {
         if (!dashDisponible)
         {
-            dashCooldownTimer -= Time.unscaledDeltaTime; // Usa unscaled para que cuente aunque haya slow motion
+            dashCooldownTimer -= Time.unscaledDeltaTime;
             if (dashCooldownTimer <= 0f)
             {
                 dashDisponible = true;
@@ -100,11 +125,10 @@ public class SlimeController : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────
-    //  INPUT SEPARADO: HOLD = DASH / TAP = SALTO
+    //  INPUT: HOLD = DASH / TAP = SALTO
     // ─────────────────────────────────────────────
     void ManejarInputDash()
     {
-        // Detectar presión y posición del input
         bool presionandoAhora = false;
         Vector2 posicionInput = Vector2.zero;
 
@@ -115,12 +139,10 @@ public class SlimeController : MonoBehaviour
         }
         else if (Mouse.current != null && Mouse.current.rightButton.isPressed)
         {
-            // Click derecho en PC para testear el dash
             presionandoAhora = true;
             posicionInput = Mouse.current.position.ReadValue();
         }
 
-        // Solo el dash funciona en el aire
         bool enElAire = !isTouchingWall && !isTouchingGround;
 
         if (presionandoAhora && enElAire && dashDisponible)
@@ -129,7 +151,6 @@ public class SlimeController : MonoBehaviour
 
             if (holdTimer >= holdThreshold && !estaEnModoDash)
             {
-                // Activar modo dash
                 estaEnModoDash = true;
                 Time.timeScale = slowMotionScale;
                 Time.fixedDeltaTime = 0.02f * Time.timeScale;
@@ -138,14 +159,12 @@ public class SlimeController : MonoBehaviour
 
             if (estaEnModoDash)
             {
-                // Calcular dirección desde el slime hacia donde apunta el dedo
                 Vector2 posSlimeEnPantalla = Camera.main.WorldToScreenPoint(transform.position);
                 Vector2 dir = (posicionInput - posSlimeEnPantalla).normalized;
 
                 if (dir.magnitude > 0.1f)
                     dashDireccion = dir;
 
-                // Dibujar flecha
                 Vector3 origen = transform.position;
                 Vector3 destino = origen + (Vector3)(dashDireccion * dashArrowLength);
                 flechaLine.SetPosition(0, origen);
@@ -154,7 +173,6 @@ public class SlimeController : MonoBehaviour
         }
         else if (!presionandoAhora && estaEnModoDash)
         {
-            // Soltó → ejecutar dash
             EjecutarDash();
         }
         else if (!presionandoAhora)
@@ -167,21 +185,17 @@ public class SlimeController : MonoBehaviour
 
     void EjecutarDash()
     {
-        // Restaurar tiempo
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
         flechaLine.enabled = false;
         estaEnModoDash = false;
         holdTimer = 0f;
 
-        // Aplicar impulso en la dirección elegida
         rb.linearVelocity = dashDireccion * dashForce;
 
-        // Actualizar direccionActualX para que los saltos posteriores sean consistentes
         if (dashDireccion.x > 0.1f) direccionActualX = 1f;
         else if (dashDireccion.x < -0.1f) direccionActualX = -1f;
 
-        // Iniciar cooldown
         dashDisponible = false;
         dashCooldownTimer = dashCooldown;
         ActualizarAura();
@@ -190,20 +204,18 @@ public class SlimeController : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────
-    //  SALTO POR TAP (solo si NO está en modo dash)
+    //  SALTO POR TAP
     // ─────────────────────────────────────────────
     void ManejarSaltoPorTap()
     {
-        if (estaEnModoDash) return; // El modo dash bloquea el salto
+        if (estaEnModoDash) return;
 
         bool realizoTap = false;
-
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame) realizoTap = true;
         else if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) realizoTap = true;
 
         if (realizoTap) ProcessSlimeJump();
 
-        // Deslizamiento en pared
         if (isTouchingWall && !isTouchingGround && rb.linearVelocity.y < 0)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -wallSlideSpeed);
     }
@@ -254,7 +266,6 @@ public class SlimeController : MonoBehaviour
             jumpCount = 0;
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
 
-            // Si estaba en modo dash, cancelarlo
             if (estaEnModoDash)
             {
                 Time.timeScale = 1f;
