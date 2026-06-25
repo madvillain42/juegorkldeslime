@@ -1590,6 +1590,9 @@ MonoBehaviour:
   verticalJitter: 0.8
   obstaclePrefab: {fileID: 7377504898691262310, guid: 6b230fb42e582664fab14b4ba1f36240, type: 3}
   boxPrefab: {fileID: 5804730549814297105, guid: 3cb8df566038d2947b30f2dc6795d01b, type: 3}
+  runaLinea: {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
+  runaV: {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
+  runaCirculo: {fileID: 11400000, guid: d37c50ee536c3fd4f860dcb5dee7ce88, type: 2}
   difficultyIncreaseRate: 0.01
   maxObstaclesOnScreen: 6
 --- !u!4 &1509121469
