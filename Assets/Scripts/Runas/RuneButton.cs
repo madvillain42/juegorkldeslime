@@ -20,7 +20,6 @@ public class RuneButton : MonoBehaviour
     [SerializeField] private float slowMotionScale  = 0.3f;
     [SerializeField] private float maxDrawTime      = 3f;
     [SerializeField] private float tiempoLimiteRuna = 3f;
-    [SerializeField] private float delayAntesDeCapturar = 0.15f; // Espera antes de activar el RuneSystem
 
     public bool ModoRunaActivo => modoRunaActivo;
 
@@ -28,25 +27,23 @@ public class RuneButton : MonoBehaviour
     private bool enCooldown     = false;
     private float cooldownTimer = 0f;
     private float drawTimer     = 0f;
-    private bool runeSystemIniciado = false; // Controla si ya se inició el challenge
 
     private InputAction drawAction;
-    private InputAction pressAction;
+
+    // Estado del press manual
+    private bool estaPresionando = false;
 
     void Start()
     {
-        drawAction  = new InputAction("Draw",  binding: "<Touchscreen>/primaryTouch/position");
-        pressAction = new InputAction("Press", binding: "<Touchscreen>/primaryTouch/press");
-
+        // Solo necesitamos la posición del mouse/touch para el trazo
+        drawAction = new InputAction("Draw", binding: "<Touchscreen>/primaryTouch/position");
         drawAction.AddBinding("<Mouse>/position");
-        pressAction.AddBinding("<Mouse>/rightButton");
-
         drawAction.Enable();
-        pressAction.Enable();
 
+        // Inicializar RuneSystem con solo el drawAction
         if (runeSystem != null)
         {
-            runeSystem.Init(drawAction, pressAction);
+            runeSystem.Init(drawAction);
             runeSystem.OnSuccess += OnRunaExitosa;
             runeSystem.OnFail    += OnRunaFallida;
         }
@@ -63,7 +60,6 @@ public class RuneButton : MonoBehaviour
     void OnDestroy()
     {
         drawAction?.Disable();
-        pressAction?.Disable();
 
         if (runeSystem != null)
         {
@@ -76,6 +72,7 @@ public class RuneButton : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
+        // Cooldown
         if (enCooldown)
         {
             cooldownTimer -= Time.unscaledDeltaTime;
@@ -90,21 +87,30 @@ public class RuneButton : MonoBehaviour
         {
             drawTimer += Time.unscaledDeltaTime;
 
-            // Esperar el delay antes de iniciar el challenge para evitar
-            // que el click del botón dispare el pressAction inmediatamente
-            if (!runeSystemIniciado && drawTimer >= delayAntesDeCapturar)
-            {
-                runeSystemIniciado = true;
-                if (runeSystem != null)
-                    runeSystem.StartChallenge(tiempoLimiteRuna);
+            // Detectar press del click derecho (PC) o touch (móvil)
+            bool presionandoAhora = false;
+            if (Mouse.current != null && Mouse.current.rightButton.isPressed)
+                presionandoAhora = true;
+            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+                presionandoAhora = true;
 
-                Debug.Log("[RuneButton] RuneSystem challenge iniciado");
+            // Notificar al RuneSystem cuando empieza y termina el press
+            if (presionandoAhora && !estaPresionando)
+            {
+                estaPresionando = true;
+                if (runeSystem != null) runeSystem.NotifyPressStarted();
+            }
+            else if (!presionandoAhora && estaPresionando)
+            {
+                estaPresionando = false;
+                if (runeSystem != null) runeSystem.NotifyPressEnded();
             }
 
-            if (runeSystem != null && runeSystemIniciado)
+            // Tick para capturar puntos del trazo
+            if (runeSystem != null)
                 runeSystem.Tick();
 
-            if (drawTimer >= maxDrawTime + delayAntesDeCapturar)
+            if (drawTimer >= maxDrawTime)
                 TerminarModoRuna();
         }
     }
@@ -120,9 +126,9 @@ public class RuneButton : MonoBehaviour
     {
         if (enCooldown || modoRunaActivo) return;
 
-        modoRunaActivo     = true;
-        runeSystemIniciado = false; // Reset — esperará el delay
-        drawTimer          = 0f;
+        modoRunaActivo  = true;
+        estaPresionando = false;
+        drawTimer       = 0f;
 
         Time.timeScale      = slowMotionScale;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
@@ -130,17 +136,20 @@ public class RuneButton : MonoBehaviour
         if (drawingPanel != null)
             drawingPanel.SetActive(true);
 
+        if (runeSystem != null)
+            runeSystem.StartChallenge(tiempoLimiteRuna);
+
         imagenBoton.color  = colorDibujando;
         boton.interactable = false;
 
-        Debug.Log("[RuneButton] Modo runa activado — esperando delay...");
+        Debug.Log("[RuneButton] Modo runa activado");
     }
 
     void TerminarModoRuna()
     {
         if (!modoRunaActivo) return;
-        modoRunaActivo     = false;
-        runeSystemIniciado = false;
+        modoRunaActivo  = false;
+        estaPresionando = false;
 
         Time.timeScale      = 1f;
         Time.fixedDeltaTime = 0.02f;

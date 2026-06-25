@@ -27,35 +27,26 @@ public class RuneSystem : MonoBehaviour
     private Coroutine timerCoroutine;
 
     private InputAction drawAction;
-    private InputAction pressAction;
 
-    public void Init(InputAction draw, InputAction press)
+    // Init ahora solo recibe drawAction — el press lo maneja RuneButton directamente
+    public void Init(InputAction draw)
     {
-        drawAction  = draw;
-        pressAction = press;
-
-        pressAction.started  += OnPressStarted;
-        pressAction.canceled += OnPressEnded;
-
+        drawAction = draw;
         if (runePanel != null) runePanel.SetActive(false);
-
-        Debug.Log("[RuneSystem] Init completado — pressAction bindings: " + pressAction.bindings.Count);
+        Debug.Log("[RuneSystem] Init completado");
     }
 
-    void OnDestroy()
+    // Mantener compatibilidad con la firma anterior por si acaso
+    public void Init(InputAction draw, InputAction press)
     {
-        if (pressAction != null)
-        {
-            pressAction.started  -= OnPressStarted;
-            pressAction.canceled -= OnPressEnded;
-        }
+        Init(draw);
     }
 
     public void StartChallenge(float timeLimit)
     {
         if (availableRunes == null || availableRunes.Length == 0)
         {
-            Debug.LogWarning("[RuneSystem] No hay runas asignadas en Available Runes");
+            Debug.LogWarning("[RuneSystem] No hay runas asignadas");
             return;
         }
 
@@ -63,7 +54,7 @@ public class RuneSystem : MonoBehaviour
         drawnPoints.Clear();
         IsActive = true;
 
-        Debug.Log($"[RuneSystem] Challenge iniciado — Runa: {currentRune.runeName} | IsActive: {IsActive}");
+        Debug.Log($"[RuneSystem] Challenge iniciado — Runa: {currentRune.runeName}");
 
         if (runePanel != null) runePanel.SetActive(true);
         if (runeTargetImage != null && currentRune.displaySprite != null)
@@ -71,6 +62,25 @@ public class RuneSystem : MonoBehaviour
         if (traceRenderer != null) { traceRenderer.positionCount = 0; traceRenderer.enabled = true; }
 
         timerCoroutine = StartCoroutine(Timer(timeLimit));
+    }
+
+    // Llamado por RuneButton cuando el jugador presiona para dibujar
+    public void NotifyPressStarted()
+    {
+        if (!IsActive) return;
+        drawnPoints.Clear();
+        isDrawing = true;
+        if (traceRenderer != null) traceRenderer.positionCount = 0;
+        Debug.Log("[RuneSystem] Empezó a dibujar");
+    }
+
+    // Llamado por RuneButton cuando el jugador suelta
+    public void NotifyPressEnded()
+    {
+        Debug.Log($"[RuneSystem] Soltó — isDrawing: {isDrawing} | Puntos: {drawnPoints.Count}");
+        if (!IsActive || !isDrawing) return;
+        isDrawing = false;
+        Evaluate();
     }
 
     public void Tick()
@@ -92,27 +102,9 @@ public class RuneSystem : MonoBehaviour
         }
     }
 
-    void OnPressStarted(InputAction.CallbackContext ctx)
-    {
-        Debug.Log($"[RuneSystem] OnPressStarted — IsActive: {IsActive}");
-        if (!IsActive) return;
-        drawnPoints.Clear();
-        isDrawing = true;
-        if (traceRenderer != null) traceRenderer.positionCount = 0;
-        Debug.Log("[RuneSystem] Empezó a dibujar");
-    }
-
-    void OnPressEnded(InputAction.CallbackContext ctx)
-    {
-        Debug.Log($"[RuneSystem] OnPressEnded — IsActive: {IsActive} | isDrawing: {isDrawing} | Puntos: {drawnPoints.Count}");
-        if (!IsActive || !isDrawing) return;
-        isDrawing = false;
-        Evaluate();
-    }
-
     void Evaluate()
     {
-        Debug.Log($"[RuneSystem] Evaluando — Puntos capturados: {drawnPoints.Count}");
+        Debug.Log($"[RuneSystem] Evaluando — Puntos: {drawnPoints.Count}");
         if (drawnPoints.Count < 5) { Fail(); return; }
 
         float score = Compare(drawnPoints, currentRune.templatePoints);
@@ -140,15 +132,13 @@ public class RuneSystem : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < limit)
         {
-            elapsed += Time.unscaledDeltaTime; // unscaled para que funcione en slow motion
+            elapsed += Time.unscaledDeltaTime;
             if (timerText != null)
                 timerText.text = Mathf.CeilToInt(limit - elapsed).ToString();
             yield return null;
         }
         if (IsActive) { isDrawing = false; Fail(); }
     }
-
-    // ─── Comparación de trazos ────────────────────────────────────────────────
 
     float Compare(List<Vector2> drawn, Vector2[] template)
     {
