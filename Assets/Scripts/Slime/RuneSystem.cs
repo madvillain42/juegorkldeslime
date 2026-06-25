@@ -17,6 +17,14 @@ public class RuneSystem : MonoBehaviour
     public float matchThreshold = 0.65f;
     public int segmentCount = 8;
 
+    [Header("Colores de Estela")]
+    public Color[] traceColors = new Color[]
+    {
+        new Color(0.2f, 0.8f, 1f),    // Celeste
+        new Color(1f, 0.3f, 0.5f),    // Rosa
+        new Color(0.4f, 1f, 0.4f)     // Verde
+    };
+
     public event System.Action OnSuccess;
     public event System.Action OnFail;
     public bool IsActive { get; private set; } = false;
@@ -28,7 +36,6 @@ public class RuneSystem : MonoBehaviour
 
     private InputAction drawAction;
 
-    // Init ahora solo recibe drawAction — el press lo maneja RuneButton directamente
     public void Init(InputAction draw)
     {
         drawAction = draw;
@@ -36,7 +43,6 @@ public class RuneSystem : MonoBehaviour
         Debug.Log("[RuneSystem] Init completado");
     }
 
-    // Mantener compatibilidad con la firma anterior por si acaso
     public void Init(InputAction draw, InputAction press)
     {
         Init(draw);
@@ -59,12 +65,24 @@ public class RuneSystem : MonoBehaviour
         if (runePanel != null) runePanel.SetActive(true);
         if (runeTargetImage != null && currentRune.displaySprite != null)
             runeTargetImage.sprite = currentRune.displaySprite;
-        if (traceRenderer != null) { traceRenderer.positionCount = 0; traceRenderer.enabled = true; }
+
+        // Color aleatorio de la estela
+        if (traceRenderer != null)
+        {
+            traceRenderer.positionCount = 0;
+            traceRenderer.enabled = true;
+
+            if (traceColors != null && traceColors.Length > 0)
+            {
+                Color c = traceColors[Random.Range(0, traceColors.Length)];
+                traceRenderer.startColor = c;
+                traceRenderer.endColor   = new Color(c.r, c.g, c.b, 0f); // Fade a transparente
+            }
+        }
 
         timerCoroutine = StartCoroutine(Timer(timeLimit));
     }
 
-    // Llamado por RuneButton cuando el jugador presiona para dibujar
     public void NotifyPressStarted()
     {
         if (!IsActive) return;
@@ -74,7 +92,6 @@ public class RuneSystem : MonoBehaviour
         Debug.Log("[RuneSystem] Empezó a dibujar");
     }
 
-    // Llamado por RuneButton cuando el jugador suelta
     public void NotifyPressEnded()
     {
         Debug.Log($"[RuneSystem] Soltó — isDrawing: {isDrawing} | Puntos: {drawnPoints.Count}");

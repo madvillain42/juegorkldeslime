@@ -69,6 +69,8 @@ public class SlimeController : MonoBehaviour
         if (runeButton == null)
             runeButton = FindFirstObjectByType<RuneButton>();
 
+        // Aplicar reducción de cooldown si ya hay pociones acumuladas
+        ActualizarCooldownDash();
         ActualizarAura();
     }
 
@@ -80,7 +82,7 @@ public class SlimeController : MonoBehaviour
         if (ModoRunaActivo)
         {
             ActualizarBotonRuna();
-            return; // ← Salir aquí, sin salto ni dash
+            return;
         }
 
         ManejarCooldownDash();
@@ -90,6 +92,17 @@ public class SlimeController : MonoBehaviour
 
         if (isTouchingWall && !isTouchingGround && rb.linearVelocity.y < 0)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -wallSlideSpeed);
+    }
+
+    // ─────────────────────────────────────────────
+    //  COOLDOWN DEL DASH — aplica reducción del GameManager
+    // ─────────────────────────────────────────────
+    public void ActualizarCooldownDash()
+    {
+        if (GameManager.Instance != null)
+            dashCooldown = GameManager.Instance.GetDashCooldown(3f); // 3f = cooldown base
+
+        Debug.Log($"[SlimeController] Cooldown dash actualizado: {dashCooldown:F2}s");
     }
 
     // ─────────────────────────────────────────────
