@@ -13,27 +13,28 @@ public class RuneSystem : MonoBehaviour
 
     [Header("Runas")]
     public RuneDefinition[] availableRunes;
-    [Range(0.4f, 0.95f)]
-    public float matchThreshold = 0.65f;
-    public int segmentCount = 8;
+    [Range(0.3f, 0.95f)]
+    public float matchThreshold = 0.50f; // Bajado de 0.65 a 0.50
+    public int segmentCount = 16;        // Subido de 8 a 16 para más precisión
 
     [Header("Colores de Estela")]
     public Color[] traceColors = new Color[]
     {
-        new Color(0.2f, 0.8f, 1f),    // Celeste
-        new Color(1f, 0.3f, 0.5f),    // Rosa
-        new Color(0.4f, 1f, 0.4f)     // Verde
+        new Color(0.2f, 0.8f, 1f),
+        new Color(1f, 0.3f, 0.5f),
+        new Color(0.4f, 1f, 0.4f)
     };
 
+    public event System.Action<RuneDefinition> OnSuccessWithRune;
     public event System.Action OnSuccess;
     public event System.Action OnFail;
     public bool IsActive { get; private set; } = false;
+    public RuneDefinition CurrentRune => currentRune;
 
     private RuneDefinition currentRune;
     private List<Vector2> drawnPoints = new List<Vector2>();
     private bool isDrawing = false;
     private Coroutine timerCoroutine;
-
     private InputAction drawAction;
 
     public void Init(InputAction draw)
@@ -43,10 +44,7 @@ public class RuneSystem : MonoBehaviour
         Debug.Log("[RuneSystem] Init completado");
     }
 
-    public void Init(InputAction draw, InputAction press)
-    {
-        Init(draw);
-    }
+    public void Init(InputAction draw, InputAction press) => Init(draw);
 
     public void StartChallenge(float timeLimit)
     {
@@ -66,7 +64,6 @@ public class RuneSystem : MonoBehaviour
         if (runeTargetImage != null && currentRune.displaySprite != null)
             runeTargetImage.sprite = currentRune.displaySprite;
 
-        // Color aleatorio de la estela
         if (traceRenderer != null)
         {
             traceRenderer.positionCount = 0;
@@ -76,7 +73,7 @@ public class RuneSystem : MonoBehaviour
             {
                 Color c = traceColors[Random.Range(0, traceColors.Length)];
                 traceRenderer.startColor = c;
-                traceRenderer.endColor   = new Color(c.r, c.g, c.b, 0f); // Fade a transparente
+                traceRenderer.endColor   = new Color(c.r, c.g, c.b, 0f);
             }
         }
 
@@ -107,7 +104,7 @@ public class RuneSystem : MonoBehaviour
         Vector2 screenPos = drawAction.ReadValue<Vector2>();
 
         if (drawnPoints.Count > 0 &&
-            Vector2.Distance(drawnPoints[drawnPoints.Count - 1], screenPos) < 5f) return;
+            Vector2.Distance(drawnPoints[drawnPoints.Count - 1], screenPos) < 3f) return; // Bajado de 5 a 3
 
         drawnPoints.Add(screenPos);
 
@@ -124,15 +121,71 @@ public class RuneSystem : MonoBehaviour
         Debug.Log($"[RuneSystem] Evaluando — Puntos: {drawnPoints.Count}");
         if (drawnPoints.Count < 5) { Fail(); return; }
 
-        float score = Compare(drawnPoints, currentRune.templatePoints);
-        Debug.Log($"[Runa] {currentRune.runeName} | Score: {score:F2} | Threshold: {matchThreshold}");
+        // Normalizar los puntos dibujados antes de comparar
+        List<Vector2> normalized = NormalizePoints(drawnPoints);
 
-        if (score >= matchThreshold) Success();
-        else Fail();
+        float bestScore = 0f;
+        RuneDefinition bestRune = null;
+
+        foreach (var rune in availableRunes)
+        {
+            // Normalizar también los templatePoints
+            List<Vector2> templateNorm = NormalizePoints(new List<Vector2>(rune.templatePoints));
+            float score = Compare(normalized, templateNorm.ToArray());
+            Debug.Log($"[Runa] {rune.runeName} | Score: {score:F2}");
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestRune  = rune;
+            }
+        }
+
+        if (bestScore >= matchThreshold && bestRune == currentRune)
+        {
+            Debug.Log($"[RuneSystem] ✅ Runa correcta: {currentRune.runeName} | Score: {bestScore:F2}");
+            Success();
+        }
+        else
+        {
+            Debug.Log($"[RuneSystem] ❌ Mejor: {bestRune?.runeName} ({bestScore:F2}) | Esperaba: {currentRune.runeName}");
+            Fail();
+        }
     }
 
-    void Success() { End(); OnSuccess?.Invoke(); }
-    void Fail()    { End(); OnFail?.Invoke(); }
+    // Normaliza los puntos a un espacio 0-1 para que el tamaño del dibujo no importe
+    List<Vector2> NormalizePoints(List<Vector2> pts)
+    {
+        if (pts.Count == 0) return pts;
+
+        float minX = float.MaxValue, minY = float.MaxValue;
+        float maxX = float.MinValue, maxY = float.MinValue;
+
+        foreach (var p in pts)
+        {
+            if (p.x < minX) minX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y > maxY) maxY = p.y;
+        }
+
+        float width  = Mathf.Max(maxX - minX, 1f);
+        float height = Mathf.Max(maxY - minY, 1f);
+
+        var result = new List<Vector2>();
+        foreach (var p in pts)
+            result.Add(new Vector2((p.x - minX) / width, (p.y - minY) / height));
+
+        return result;
+    }
+
+    void Success()
+    {
+        End();
+        OnSuccess?.Invoke();
+        OnSuccessWithRune?.Invoke(currentRune);
+    }
+
+    void Fail() { End(); OnFail?.Invoke(); }
 
     void End()
     {

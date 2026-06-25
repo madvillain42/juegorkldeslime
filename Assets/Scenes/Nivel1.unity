@@ -1086,7 +1086,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1532,6 +1532,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
   matchThreshold: 0.65
   segmentCount: 8
+  traceColors:
+  - {r: 0.2, g: 0.8, b: 1, a: 1}
+  - {r: 1, g: 0.3, b: 0.5, a: 1}
+  - {r: 0.4, g: 1, b: 0.4, a: 1}
 --- !u!4 &1332919095
 Transform:
   m_ObjectHideFlags: 0
@@ -1585,7 +1589,7 @@ MonoBehaviour:
   horizontalJitter: 0.4
   verticalJitter: 0.8
   obstaclePrefab: {fileID: 7377504898691262310, guid: 6b230fb42e582664fab14b4ba1f36240, type: 3}
-  boxPrefab: {fileID: 7377504898691262310, guid: 6b230fb42e582664fab14b4ba1f36240, type: 3}
+  boxPrefab: {fileID: 5804730549814297105, guid: 3cb8df566038d2947b30f2dc6795d01b, type: 3}
   difficultyIncreaseRate: 0.01
   maxObstaclesOnScreen: 6
 --- !u!4 &1509121469
@@ -2302,7 +2306,7 @@ MonoBehaviour:
   boton: {fileID: 1897591387}
   imagenBoton: {fileID: 1897591388}
   drawingPanel: {fileID: 1294039449}
-  runeSystem: {fileID: 0}
+  runeSystem: {fileID: 1332919094}
   colorActivo: {r: 0.2, g: 0.8, b: 1, a: 1}
   colorCooldown: {r: 0.4, g: 0.4, b: 0.4, a: 1}
   colorDibujando: {r: 1, g: 0.8, b: 0.1, a: 1}
@@ -2310,7 +2314,6 @@ MonoBehaviour:
   slowMotionScale: 0.3
   maxDrawTime: 3
   tiempoLimiteRuna: 3
-  delayAntesDeCapturar: 0.15
 --- !u!114 &1897591387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2350,7 +2353,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1897591388}
   m_OnClick:
     m_PersistentCalls:
