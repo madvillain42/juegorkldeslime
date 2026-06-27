@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RunaZ
   m_EditorClassIdentifier: Assembly-CSharp::RuneDefinition
   runeName: RunaZ
-  displaySprite: {fileID: 0}
+  displaySprite: {fileID: -5770968474499277608, guid: 2ba722a2070133440b6b3065b156b576, type: 3}
   templatePoints:
   - {x: 0, y: 1}
   - {x: 0.25, y: 1}
