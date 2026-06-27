@@ -14,8 +14,8 @@ public class RuneSystem : MonoBehaviour
     [Header("Runas")]
     public RuneDefinition[] availableRunes;
     [Range(0.3f, 0.95f)]
-    public float matchThreshold = 0.50f; // Bajado de 0.65 a 0.50
-    public int segmentCount = 16;        // Subido de 8 a 16 para más precisión
+    public float matchThreshold = 0.35f;
+    public int segmentCount = 16;
 
     [Header("Colores de Estela")]
     public Color[] traceColors = new Color[]
@@ -25,13 +25,12 @@ public class RuneSystem : MonoBehaviour
         new Color(0.4f, 1f, 0.4f)
     };
 
+    // Evento con la runa detectada — BoxWithRune lo usa para abrir la caja correcta
     public event System.Action<RuneDefinition> OnSuccessWithRune;
     public event System.Action OnSuccess;
     public event System.Action OnFail;
     public bool IsActive { get; private set; } = false;
-    public RuneDefinition CurrentRune => currentRune;
 
-    private RuneDefinition currentRune;
     private List<Vector2> drawnPoints = new List<Vector2>();
     private bool isDrawing = false;
     private Coroutine timerCoroutine;
@@ -46,23 +45,15 @@ public class RuneSystem : MonoBehaviour
 
     public void Init(InputAction draw, InputAction press) => Init(draw);
 
+    // Ya no elige runa aleatoria — solo activa el modo dibujo
     public void StartChallenge(float timeLimit)
     {
-        if (availableRunes == null || availableRunes.Length == 0)
-        {
-            Debug.LogWarning("[RuneSystem] No hay runas asignadas");
-            return;
-        }
-
-        currentRune = availableRunes[Random.Range(0, availableRunes.Length)];
         drawnPoints.Clear();
         IsActive = true;
 
-        Debug.Log($"[RuneSystem] Challenge iniciado — Runa: {currentRune.runeName}");
+        Debug.Log("[RuneSystem] Modo dibujo activado — dibuja lo que quieras");
 
         if (runePanel != null) runePanel.SetActive(true);
-        if (runeTargetImage != null && currentRune.displaySprite != null)
-            runeTargetImage.sprite = currentRune.displaySprite;
 
         if (traceRenderer != null)
         {
@@ -104,7 +95,7 @@ public class RuneSystem : MonoBehaviour
         Vector2 screenPos = drawAction.ReadValue<Vector2>();
 
         if (drawnPoints.Count > 0 &&
-            Vector2.Distance(drawnPoints[drawnPoints.Count - 1], screenPos) < 3f) return; // Bajado de 5 a 3
+            Vector2.Distance(drawnPoints[drawnPoints.Count - 1], screenPos) < 3f) return;
 
         drawnPoints.Add(screenPos);
 
@@ -121,7 +112,6 @@ public class RuneSystem : MonoBehaviour
         Debug.Log($"[RuneSystem] Evaluando — Puntos: {drawnPoints.Count}");
         if (drawnPoints.Count < 5) { Fail(); return; }
 
-        // Normalizar los puntos dibujados antes de comparar
         List<Vector2> normalized = NormalizePoints(drawnPoints);
 
         float bestScore = 0f;
@@ -129,7 +119,6 @@ public class RuneSystem : MonoBehaviour
 
         foreach (var rune in availableRunes)
         {
-            // Normalizar también los templatePoints
             List<Vector2> templateNorm = NormalizePoints(new List<Vector2>(rune.templatePoints));
             float score = Compare(normalized, templateNorm.ToArray());
             Debug.Log($"[Runa] {rune.runeName} | Score: {score:F2}");
@@ -140,19 +129,21 @@ public class RuneSystem : MonoBehaviour
             }
         }
 
-        if (bestScore >= matchThreshold && bestRune == currentRune)
+        // Exitoso si el mejor score supera el threshold — sin importar cuál runa fue
+        if (bestScore >= matchThreshold && bestRune != null)
         {
-            Debug.Log($"[RuneSystem] ✅ Runa correcta: {currentRune.runeName} | Score: {bestScore:F2}");
-            Success();
+            Debug.Log($"[RuneSystem] ✅ Runa detectada: {bestRune.runeName} | Score: {bestScore:F2}");
+            End();
+            OnSuccess?.Invoke();
+            OnSuccessWithRune?.Invoke(bestRune); // Pasa la runa detectada a las cajas
         }
         else
         {
-            Debug.Log($"[RuneSystem] ❌ Mejor: {bestRune?.runeName} ({bestScore:F2}) | Esperaba: {currentRune.runeName}");
+            Debug.Log($"[RuneSystem] ❌ No se reconoció ninguna runa | Mejor: {bestRune?.runeName} ({bestScore:F2})");
             Fail();
         }
     }
 
-    // Normaliza los puntos a un espacio 0-1 para que el tamaño del dibujo no importe
     List<Vector2> NormalizePoints(List<Vector2> pts)
     {
         if (pts.Count == 0) return pts;
@@ -176,13 +167,6 @@ public class RuneSystem : MonoBehaviour
             result.Add(new Vector2((p.x - minX) / width, (p.y - minY) / height));
 
         return result;
-    }
-
-    void Success()
-    {
-        End();
-        OnSuccess?.Invoke();
-        OnSuccessWithRune?.Invoke(currentRune);
     }
 
     void Fail() { End(); OnFail?.Invoke(); }
