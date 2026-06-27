@@ -16,3 +16,12 @@
 *.slnx
 *.user
 *.userprefs
+Logs/AssetImportWorker0.log
+Logs/AssetImportWorker0.log
+Logs/AssetImportWorker1-prev.log
+Logs/AssetImportWorker1.log
+Logs/Packages-Update.log
+Logs/shadercompiler-AssetImportWorker0-0.log
+Logs/shadercompiler-AssetImportWorker1-0.log
+Logs/shadercompiler-UnityShaderCompiler.exe-0.log
+UserSettings/Layouts/default-6000.dwlt
