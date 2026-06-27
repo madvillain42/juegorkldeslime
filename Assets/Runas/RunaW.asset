@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RunaW
   m_EditorClassIdentifier: Assembly-CSharp::RuneDefinition
   runeName: RunaW
-  displaySprite: {fileID: 0}
+  displaySprite: {fileID: -7473315769732831383, guid: bdbce32cfefa7234f9ea749b45f18a6c, type: 3}
   templatePoints:
   - {x: 0, y: 1}
   - {x: 0.08, y: 0.75}

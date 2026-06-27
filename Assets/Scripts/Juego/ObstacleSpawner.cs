@@ -7,45 +7,53 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("Configuración de Columnas")]
-    // Ajustado a la posición real de tus paredes
     [SerializeField] private float leftWallX = -3f;
     [SerializeField] private float rightWallX = 3f;
 
     [Header("Configuración de Spawn")]
     [SerializeField] private float spawnDistanceAhead = 8f;
-    [SerializeField] private float minSpawnInterval = 4f;
-    [SerializeField] private float maxSpawnInterval = 7f;
+    [SerializeField] private float minSpawnInterval = 2.5f;
+    [SerializeField] private float maxSpawnInterval = 4.5f;
 
     [Header("Variación de Posición")]
     [SerializeField] private float horizontalJitter = 0.4f;
-    [SerializeField] private float verticalJitter = 0.8f;
+    [SerializeField] private float verticalJitter = 0.3f; // Bajado para evitar amontonamiento
 
     [Header("Prefabs")]
     [SerializeField] private GameObject obstaclePrefab;
     [SerializeField] private GameObject boxPrefab;
     [SerializeField] private GameObject sierraPrefab;
-    [SerializeField] private GameObject spikesPrefab; // Espinas
+    [SerializeField] private GameObject spikesPrefab;
 
     [Header("Runas para las Cajas")]
-    [SerializeField] private RuneDefinition runaLinea;
-    [SerializeField] private RuneDefinition runaV;
-    [SerializeField] private RuneDefinition runaCirculo;
+    [SerializeField] private RuneDefinition runaZ;
+    [SerializeField] private RuneDefinition runaC;
+    [SerializeField] private RuneDefinition runaW;
+
+    [Header("Sprites de las Cajas")]
+    [SerializeField] private Sprite spriteRunaZ;
+    [SerializeField] private Sprite spriteRunaC;
+    [SerializeField] private Sprite spriteRunaW;
 
     [Header("Probabilidades de Spawn")]
-    [SerializeField] private float probabilidadCaja    = 0.3f;  // 30% caja
-    [SerializeField] private float probabilidadSierra  = 0.2f;  // 20% sierra
-    [SerializeField] private float probabilidadPuas    = 0.15f; // 15% púas en pared
-                                                                 // 35% obstáculo normal
+    [SerializeField] private float probabilidadCaja   = 0.10f; // Pociones muy raras
+    [SerializeField] private float probabilidadSierra = 0.35f; // Sierras frecuentes
+    [SerializeField] private float probabilidadPuas   = 0.40f; // Púas muy frecuentes
+                                                                // 0.15 obstáculo normal
 
     [Header("Dificultad")]
     [SerializeField] private float difficultyIncreaseRate = 0.01f;
 
     [Header("Límite de Obstáculos en Pantalla")]
-    [SerializeField] private int maxObstaclesOnScreen = 6;
+    [SerializeField] private int maxObstaclesOnScreen = 5;
 
-    private readonly Color colorLinea   = new Color(0.2f, 0.8f, 1f);
-    private readonly Color colorV       = new Color(1f, 0.3f, 0.5f);
-    private readonly Color colorCirculo = new Color(0.4f, 1f, 0.4f);
+    // Separación mínima entre espinas para evitar que se amontonen
+    private float lastSpikesY = -999f;
+    [SerializeField] private float minDistanciaEntrePuas = 4f;
+
+    private readonly Color colorZ = new Color(1f, 0.2f, 0.2f);
+    private readonly Color colorC = new Color(1f, 0.6f, 0.1f);
+    private readonly Color colorW = new Color(0.2f, 0.5f, 1f);
 
     private float lastSpawnY = 0f;
     private float nextSpawnInterval;
@@ -61,7 +69,6 @@ public class ObstacleSpawner : MonoBehaviour
             if (playerObj != null) player = playerObj.transform;
         }
 
-        // Calcula el ancho de las 3 columnas basándose en tus paredes de -3 a 3
         float totalWidth = rightWallX - leftWallX;
         columnWidth = totalWidth / 3f;
 
@@ -86,8 +93,8 @@ public class ObstacleSpawner : MonoBehaviour
             lastSpawnY = player.position.y;
 
             float difficulty = player.position.y * difficultyIncreaseRate;
-            minSpawnInterval = Mathf.Max(1.5f, 4f - difficulty);
-            maxSpawnInterval = Mathf.Max(2.5f, 7f - difficulty);
+            minSpawnInterval = Mathf.Max(1.5f, 2.5f - difficulty);
+            maxSpawnInterval = Mathf.Max(2.5f, 4.5f - difficulty);
 
             nextSpawnInterval = Random.Range(minSpawnInterval, maxSpawnInterval);
         }
@@ -95,13 +102,20 @@ public class ObstacleSpawner : MonoBehaviour
 
     void SpawnRow()
     {
-        // Spawn de púas EXCLUSIVO en las paredes
-        if (spikesPrefab != null && Random.value < probabilidadPuas)
+        float spawnY = player.position.y + spawnDistanceAhead;
+        bool spawnoPuas = false;
+
+        // Solo spawneamos púas si hay distancia suficiente
+        if (spikesPrefab != null && 
+            Random.value < probabilidadPuas && 
+            spawnY - lastSpikesY >= minDistanciaEntrePuas)
         {
-            SpawnPuas();
+            SpawnPuas(spawnY);
+            lastSpikesY = spawnY;
+            spawnoPuas = true;
         }
 
-        // Spawn del resto de obstáculos en las columnas centrales
+        // Si spawneó púas, reducir probabilidad de caja en esa fila
         List<int> columnasDisponibles = new List<int> { 0, 1, 2 };
         int cantidadObstaculos = Random.Range(1, 3);
 
@@ -112,10 +126,16 @@ public class ObstacleSpawner : MonoBehaviour
 
             float jitterX = Random.Range(-horizontalJitter, horizontalJitter);
             float jitterY = Random.Range(-verticalJitter, verticalJitter);
-            float spawnY  = player.position.y + spawnDistanceAhead + jitterY;
-            Vector3 spawnPos = new Vector3(columnCenters[columna] + jitterX, spawnY, 0f);
+            float posY    = spawnY + jitterY;
+            Vector3 spawnPos = new Vector3(columnCenters[columna] + jitterX, posY, 0f);
 
             float roll = Random.value;
+
+            // Si hay púas en esta fila, no spawnear cajas
+            if (spawnoPuas && roll < probabilidadCaja)
+            {
+                roll = probabilidadCaja; // Forzar a no ser caja
+            }
 
             if (roll < probabilidadCaja)
                 SpawnCaja(spawnPos);
@@ -126,40 +146,20 @@ public class ObstacleSpawner : MonoBehaviour
         }
     }
 
-    void SpawnPuas()
+    void SpawnPuas(float spawnY)
     {
-        // Elegir pared aleatoria
         bool esIzquierda = Random.value < 0.5f;
-        
-        // Empujón para que no se entierren en la pared de -3 o 3
-        float offsetPared = 0.70f; 
+        float offsetPared = 0.70f;
         float wallX = esIzquierda ? (leftWallX + offsetPared) : (rightWallX - offsetPared);
-        
-        float spawnY = player.position.y + spawnDistanceAhead + Random.Range(-verticalJitter, verticalJitter);
-        Vector3 pos = new Vector3(wallX, spawnY, 0f);
 
-        // Generar las espinas
+        Vector3 pos = new Vector3(wallX, spawnY, 0f);
         GameObject spikes = Instantiate(spikesPrefab, pos, Quaternion.identity);
 
-        // Forzar tu escala exacta del prefab
         spikes.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+        spikes.transform.rotation = Quaternion.Euler(0, 0, esIzquierda ? -90f : 90f);
 
-        // Rotar apuntando al centro
-        if (esIzquierda)
-        {
-            spikes.transform.rotation = Quaternion.Euler(0, 0, -90f); // Apunta a la derecha
-        }
-        else
-        {
-            spikes.transform.rotation = Quaternion.Euler(0, 0, 90f);  // Apunta a la izquierda
-        }
-
-        // Asegurar que se dibujen por encima de las paredes visualmente
         SpriteRenderer sr = spikes.GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.sortingOrder = 10;
-        }
+        if (sr != null) sr.sortingOrder = 10;
 
         activeObstacles.Add(spikes);
         AsegurarAutoDestroy(spikes);
@@ -194,24 +194,28 @@ public class ObstacleSpawner : MonoBehaviour
         int runaIndex = Random.Range(0, 3);
         RuneDefinition runaElegida;
         Color colorElegido;
+        Sprite spriteElegido;
 
         switch (runaIndex)
         {
             case 0:
-                runaElegida  = runaLinea;
-                colorElegido = colorLinea;
+                runaElegida   = runaZ;
+                colorElegido  = colorZ;
+                spriteElegido = spriteRunaZ;
                 break;
             case 1:
-                runaElegida  = runaV;
-                colorElegido = colorV;
+                runaElegida   = runaC;
+                colorElegido  = colorC;
+                spriteElegido = spriteRunaC;
                 break;
             default:
-                runaElegida  = runaCirculo;
-                colorElegido = colorCirculo;
+                runaElegida   = runaW;
+                colorElegido  = colorW;
+                spriteElegido = spriteRunaW;
                 break;
         }
 
-        box.AsignarRuna(runaElegida, colorElegido);
+        box.AsignarRuna(runaElegida, colorElegido, spriteElegido);
     }
 
     void AsegurarAutoDestroy(GameObject obj)
