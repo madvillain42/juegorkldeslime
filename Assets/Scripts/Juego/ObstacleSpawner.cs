@@ -7,8 +7,9 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("Configuración de Columnas")]
-    [SerializeField] private float leftWallX = -2.5f;
-    [SerializeField] private float rightWallX = 2.5f;
+    // Ajustado a la posición real de tus paredes
+    [SerializeField] private float leftWallX = -3f;
+    [SerializeField] private float rightWallX = 3f;
 
     [Header("Configuración de Spawn")]
     [SerializeField] private float spawnDistanceAhead = 8f;
@@ -23,7 +24,7 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private GameObject obstaclePrefab;
     [SerializeField] private GameObject boxPrefab;
     [SerializeField] private GameObject sierraPrefab;
-    [SerializeField] private GameObject spikesPrefab; // ← nuevo
+    [SerializeField] private GameObject spikesPrefab; // Espinas
 
     [Header("Runas para las Cajas")]
     [SerializeField] private RuneDefinition runaLinea;
@@ -55,8 +56,12 @@ public class ObstacleSpawner : MonoBehaviour
     void Start()
     {
         if (player == null)
-            player = GameObject.FindGameObjectWithTag("Player").transform;
+        {
+            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+        }
 
+        // Calcula el ancho de las 3 columnas basándose en tus paredes de -3 a 3
         float totalWidth = rightWallX - leftWallX;
         columnWidth = totalWidth / 3f;
 
@@ -75,7 +80,7 @@ public class ObstacleSpawner : MonoBehaviour
 
         if (activeObstacles.Count >= maxObstaclesOnScreen) return;
 
-        if (player.position.y - lastSpawnY > nextSpawnInterval)
+        if (player != null && player.position.y - lastSpawnY > nextSpawnInterval)
         {
             SpawnRow();
             lastSpawnY = player.position.y;
@@ -90,10 +95,13 @@ public class ObstacleSpawner : MonoBehaviour
 
     void SpawnRow()
     {
-        // Spawn de púas en pared — independiente de las columnas
+        // Spawn de púas EXCLUSIVO en las paredes
         if (spikesPrefab != null && Random.value < probabilidadPuas)
+        {
             SpawnPuas();
+        }
 
+        // Spawn del resto de obstáculos en las columnas centrales
         List<int> columnasDisponibles = new List<int> { 0, 1, 2 };
         int cantidadObstaculos = Random.Range(1, 3);
 
@@ -122,16 +130,36 @@ public class ObstacleSpawner : MonoBehaviour
     {
         // Elegir pared aleatoria
         bool esIzquierda = Random.value < 0.5f;
-        float wallX  = esIzquierda ? leftWallX : rightWallX;
+        
+        // Empujón para que no se entierren en la pared de -3 o 3
+        float offsetPared = 0.70f; 
+        float wallX = esIzquierda ? (leftWallX + offsetPared) : (rightWallX - offsetPared);
+        
         float spawnY = player.position.y + spawnDistanceAhead + Random.Range(-verticalJitter, verticalJitter);
-
         Vector3 pos = new Vector3(wallX, spawnY, 0f);
+
+        // Generar las espinas
         GameObject spikes = Instantiate(spikesPrefab, pos, Quaternion.identity);
 
-        // Orientar según la pared
-        spikes.transform.localScale = esIzquierda ?
-            new Vector3(1, 1, 1) :    // pared izquierda → apunta derecha
-            new Vector3(-1, 1, 1);    // pared derecha   → apunta izquierda
+        // Forzar tu escala exacta del prefab
+        spikes.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+
+        // Rotar apuntando al centro
+        if (esIzquierda)
+        {
+            spikes.transform.rotation = Quaternion.Euler(0, 0, -90f); // Apunta a la derecha
+        }
+        else
+        {
+            spikes.transform.rotation = Quaternion.Euler(0, 0, 90f);  // Apunta a la izquierda
+        }
+
+        // Asegurar que se dibujen por encima de las paredes visualmente
+        SpriteRenderer sr = spikes.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.sortingOrder = 10;
+        }
 
         activeObstacles.Add(spikes);
         AsegurarAutoDestroy(spikes);
@@ -139,6 +167,7 @@ public class ObstacleSpawner : MonoBehaviour
 
     void SpawnObstaculo(Vector3 pos)
     {
+        if (obstaclePrefab == null) return;
         GameObject obj = Instantiate(obstaclePrefab, pos, Quaternion.identity);
         activeObstacles.Add(obj);
         AsegurarAutoDestroy(obj);
@@ -154,6 +183,7 @@ public class ObstacleSpawner : MonoBehaviour
 
     void SpawnCaja(Vector3 pos)
     {
+        if (boxPrefab == null) return;
         GameObject obj = Instantiate(boxPrefab, pos, Quaternion.identity);
         activeObstacles.Add(obj);
         AsegurarAutoDestroy(obj);
