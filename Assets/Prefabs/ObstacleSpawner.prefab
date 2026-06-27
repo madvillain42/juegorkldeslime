@@ -50,6 +50,17 @@ MonoBehaviour:
   spawnDistanceAhead: 8
   minSpawnInterval: 3
   maxSpawnInterval: 5
+  horizontalJitter: 0.4
+  verticalJitter: 0.8
   obstaclePrefab: {fileID: 7377504898691262310, guid: 6b230fb42e582664fab14b4ba1f36240, type: 3}
-  boxPrefab: {fileID: 7377504898691262310, guid: 6b230fb42e582664fab14b4ba1f36240, type: 3}
+  boxPrefab: {fileID: 5804730549814297105, guid: 3cb8df566038d2947b30f2dc6795d01b, type: 3}
+  sierraPrefab: {fileID: 3073047218831489623, guid: e5917d9531ba4c04796b9009ced7bb29, type: 3}
+  spikesPrefab: {fileID: 1129572916519896080, guid: f50c7da9b307a6b478abfa69ba819755, type: 3}
+  runaLinea: {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
+  runaV: {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
+  runaCirculo: {fileID: 11400000, guid: d37c50ee536c3fd4f860dcb5dee7ce88, type: 2}
+  probabilidadCaja: 0.3
+  probabilidadSierra: 0.2
+  probabilidadPuas: 0.15
   difficultyIncreaseRate: 0.01
+  maxObstaclesOnScreen: 6

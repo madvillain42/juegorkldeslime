@@ -1571,8 +1571,8 @@ MonoBehaviour:
   traceRenderer: {fileID: 1294039453}
   availableRunes:
   - {fileID: 11400000, guid: d37c50ee536c3fd4f860dcb5dee7ce88, type: 2}
-  - {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
   - {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
+  - {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
   matchThreshold: 0.3
   segmentCount: 16
   traceColors:

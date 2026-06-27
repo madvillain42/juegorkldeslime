@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class SlimeController : MonoBehaviour
 {
@@ -25,6 +26,10 @@ public class SlimeController : MonoBehaviour
     [SerializeField] private Color auraColorReady    = new Color(1f, 0.9f, 0.2f, 1f);
     [SerializeField] private Color auraColorCooldown = new Color(0.3f, 0.8f, 1f, 1f);
 
+    [Header("Vida y Daño")]
+    [SerializeField] private Color colorDaño  = new Color(1f, 0.2f, 0.2f, 1f); // Flash rojo al recibir daño
+    [SerializeField] private float tiempoInvulnerabilidad = 1.5f;               // Segundos de invulnerabilidad tras daño
+
     [Header("Botón de Runa")]
     [SerializeField] private RuneButton runeButton;
 
@@ -47,7 +52,10 @@ public class SlimeController : MonoBehaviour
     // --- Flecha de dirección ---
     private LineRenderer flechaLine;
 
-    // Propiedad para saber si el modo runa está activo
+    // --- Vida ---
+    private bool estaVivo = true;
+    private bool esInvulnerable = false;
+
     private bool ModoRunaActivo => runeButton != null && runeButton.ModoRunaActivo;
 
     void Start()
@@ -69,16 +77,15 @@ public class SlimeController : MonoBehaviour
         if (runeButton == null)
             runeButton = FindFirstObjectByType<RuneButton>();
 
-        // Aplicar reducción de cooldown si ya hay pociones acumuladas
         ActualizarCooldownDash();
         ActualizarAura();
     }
 
     void Update()
     {
+        if (!estaVivo) return;
         if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameState.Climbing) return;
 
-        // Si el modo runa está activo, bloquear TODO el input del slime
         if (ModoRunaActivo)
         {
             ActualizarBotonRuna();
@@ -95,14 +102,98 @@ public class SlimeController : MonoBehaviour
     }
 
     // ─────────────────────────────────────────────
-    //  COOLDOWN DEL DASH — aplica reducción del GameManager
+    //  SISTEMA DE VIDA Y DAÑO
+    // ─────────────────────────────────────────────
+    public void RecibirDaño()
+    {
+        if (!estaVivo || esInvulnerable) return;
+
+        // Intentar consumir escudo primero
+        if (GameManager.Instance != null && GameManager.Instance.ConsumirEscudo())
+        {
+            Debug.Log("[SlimeController] Escudo absorbió el golpe");
+            StartCoroutine(FlashDaño());
+            StartCoroutine(PeriodoInvulnerabilidad());
+            return;
+        }
+
+        // Sin escudo → muerte
+        Morir();
+    }
+
+    void Morir()
+    {
+        if (!estaVivo) return;
+        estaVivo = false;
+
+        Debug.Log("[SlimeController] ¡El slime murió!");
+
+        // Restaurar tiempo por si estaba en slow motion
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+
+        // Desactivar física
+        rb.linearVelocity = Vector2.zero;
+        rb.gravityScale = 0f;
+
+        // Flash rojo y desaparecer
+        StartCoroutine(SecuenciaMuerte());
+    }
+
+    IEnumerator SecuenciaMuerte()
+    {
+        // Flash rojo
+        if (sr != null) sr.color = colorDaño;
+        yield return new WaitForSeconds(0.3f);
+
+        // Desaparecer
+        if (sr != null) sr.enabled = false;
+        yield return new WaitForSeconds(0.5f);
+
+        // Game Over
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetStats();
+            GameManager.Instance.ChangeState(GameState.GameOver);
+        }
+
+        // Recargar la escena actual
+        UnityEngine.SceneManagement.SceneManager.LoadScene(
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
+
+    IEnumerator FlashDaño()
+    {
+        Color colorOriginal = sr != null ? sr.color : Color.white;
+        if (sr != null) sr.color = colorDaño;
+        yield return new WaitForSeconds(0.15f);
+        if (sr != null) sr.color = colorOriginal;
+    }
+
+    IEnumerator PeriodoInvulnerabilidad()
+    {
+        esInvulnerable = true;
+
+        // Parpadeo durante la invulnerabilidad
+        float elapsed = 0f;
+        while (elapsed < tiempoInvulnerabilidad)
+        {
+            if (sr != null) sr.enabled = !sr.enabled;
+            yield return new WaitForSeconds(0.1f);
+            elapsed += 0.1f;
+        }
+
+        if (sr != null) sr.enabled = true;
+        esInvulnerable = false;
+    }
+
+    // ─────────────────────────────────────────────
+    //  COOLDOWN DEL DASH
     // ─────────────────────────────────────────────
     public void ActualizarCooldownDash()
     {
         if (GameManager.Instance != null)
-            dashCooldown = GameManager.Instance.GetDashCooldown(3f); // 3f = cooldown base
-
-        Debug.Log($"[SlimeController] Cooldown dash actualizado: {dashCooldown:F2}s");
+            dashCooldown = GameManager.Instance.GetDashCooldown(3f);
     }
 
     // ─────────────────────────────────────────────
@@ -212,8 +303,6 @@ public class SlimeController : MonoBehaviour
         dashDisponible = false;
         dashCooldownTimer = dashCooldown;
         ActualizarAura();
-
-        Debug.Log($"[Dash] Dirección: {dashDireccion} | Fuerza: {dashForce}");
     }
 
     // ─────────────────────────────────────────────
@@ -247,7 +336,6 @@ public class SlimeController : MonoBehaviour
             isTouchingGround = false;
             isTouchingWall = false;
             rb.gravityScale = originalGravity;
-            Debug.Log($"[Suelo Seguro] Despegue hacia X: {direccionActualX}");
         }
         else if (isTouchingWall)
         {
@@ -259,12 +347,10 @@ public class SlimeController : MonoBehaviour
             rb.linearVelocity = new Vector2(direccionActualX * baseHorizontalForce, baseVerticalForce);
             isTouchingWall = false;
             rb.gravityScale = originalGravity;
-            Debug.Log($"[Torre - Salto 1] Rebote hacia X: {direccionActualX}");
         }
         else
         {
             rb.linearVelocity = new Vector2(direccionActualX * baseHorizontalForce, rb.linearVelocity.y + fuerzaImpulsoAire);
-            Debug.Log($"[Torre - Salto {jumpCount}] Boost en el aire hacia X: {direccionActualX}");
         }
     }
 
@@ -306,8 +392,11 @@ public class SlimeController : MonoBehaviour
             isTouchingWall = true;
             jumpCount = 0;
             rb.linearVelocity = Vector2.zero;
-            Debug.Log($"[Obstáculo] Normal: {contactNormal} → Nueva dirección: {direccionActualX}");
         }
+
+        // Objetos letales — tag "Lethal"
+        if (collision.gameObject.CompareTag("Lethal"))
+            RecibirDaño();
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -321,5 +410,12 @@ public class SlimeController : MonoBehaviour
         if (collision.gameObject.CompareTag("Wall")) isTouchingWall = false;
         if (collision.gameObject.CompareTag("Ground")) isTouchingGround = false;
         if (collision.gameObject.CompareTag("Obstacle")) isTouchingWall = false;
+    }
+
+    // Trigger para púas y lava (objetos que matan sin colisión física)
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Lethal"))
+            RecibirDaño();
     }
 }
