@@ -459,7 +459,7 @@ MonoBehaviour:
   carrilIzq: {fileID: 1975529260}
   carrilMid: {fileID: 1143304883}
   carrilDer: {fileID: 256904341}
-  slideSpeed: 12
+  slideSpeed: 15
   swipeThreshold: 60
 --- !u!114 &1395538737
 MonoBehaviour:
@@ -480,6 +480,10 @@ MonoBehaviour:
   availableRunes: []
   matchThreshold: 0.65
   segmentCount: 8
+  traceColors:
+  - {r: 0.2, g: 0.8, b: 1, a: 1}
+  - {r: 1, g: 0.3, b: 0.5, a: 1}
+  - {r: 0.4, g: 1, b: 0.4, a: 1}
 --- !u!1 &1617789200
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,6 +494,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1617789202}
   - component: {fileID: 1617789201}
+  - component: {fileID: 1617789203}
   m_Layer: 0
   m_Name: Boss
   m_TagString: Untagged
@@ -566,11 +571,36 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.72, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.15, y: 1.15, z: 1.15}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1617789203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1617789200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7f8d20a040a4e9439d464f8ef748558, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossAttackController
+  laneSystem: {fileID: 1395538736}
+  runeSystem: {fileID: 1395538737}
+  projectilePrefab: {fileID: 5680367364581768779, guid: 00fbf30e5e36a7f4ca3f627bb3cba0b2, type: 3}
+  warningPrefab: {fileID: 8852655683462598271, guid: 02c7c5305256c634c9324389e582f899, type: 3}
+  warningY: 1
+  spawnY: 3
+  despawnY: -5
+  attackInterval: 0.6
+  attackVariance: 0.5
+  warningDuration: 0.3
+  minPatternsBeforeRune: 18
+  maxPatternsBeforeRune: 23
+  runeChallengeTime: 4
 --- !u!1 &1787881118
 GameObject:
   m_ObjectHideFlags: 0

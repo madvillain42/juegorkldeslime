@@ -46,6 +46,14 @@ public class LaneSystem : MonoBehaviour
 
     public void Tick()
     {
+        // Solo acumular delta si el dedo/click está presionado
+        if (!touchPressAction.IsPressed())
+        {
+            swipeAccumX = 0f;
+            swipeLocked = false;
+            return;
+        }
+
         Vector2 delta = swipeAction.ReadValue<Vector2>();
         swipeAccumX += delta.x;
 
@@ -54,12 +62,6 @@ public class LaneSystem : MonoBehaviour
             int dir = swipeAccumX > 0 ? 1 : -1;
             TryMoveToLane(currentLane + dir);
             swipeLocked = true;
-        }
-
-        if (!touchPressAction.IsPressed())
-        {
-            swipeAccumX = 0f;
-            swipeLocked = false;
         }
     }
 
