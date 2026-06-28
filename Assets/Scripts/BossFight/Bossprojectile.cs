@@ -22,10 +22,24 @@ public class BossProjectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
+        if (!other.CompareTag("Player")) return;
+
+        // Buscar el SlimeBossController para manejar vidas
+        SlimeBossController slimeBoss = other.GetComponent<SlimeBossController>();
+        if (slimeBoss != null)
         {
-            Debug.Log("Proyectil impactó al slime. Conectar a HP aquí.");
+            slimeBoss.RecibirDaño();
             Destroy(gameObject);
+            return;
         }
+
+        // Fallback — si no tiene SlimeBossController, game over directo
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetStats();
+            GameManager.Instance.ChangeState(GameState.GameOver);
+        }
+
+        Destroy(gameObject);
     }
 }
