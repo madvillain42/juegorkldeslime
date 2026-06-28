@@ -3399,6 +3399,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 7430807227428401244, guid: 94983a81cbb2765429b4418b7bf941c6, type: 3}
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Color.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Color.b
+      value: 0.21960786
+      objectReference: {fileID: 0}
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Color.g
+      value: 0.21960786
+      objectReference: {fileID: 0}
+    - target: {fileID: 907687806428532993, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
+      propertyPath: m_Color.r
+      value: 0.21960786
+      objectReference: {fileID: 0}
     - target: {fileID: 3929497850198240699, guid: cc7c4068144d9504d83eb50ed11a3e0d, type: 3}
       propertyPath: runeSystem
       value: 
