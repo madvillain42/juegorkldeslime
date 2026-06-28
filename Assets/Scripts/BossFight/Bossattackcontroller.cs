@@ -37,20 +37,16 @@ public class BossAttackController : MonoBehaviour
     private int  patternsUntilRune;
     private bool waitingForRune = false;
 
-    // Pesos de cada patrón
     private const float WeightSingle = 0.50f;
     private const float WeightDouble = 0.50f;
-
-    // ─────────────────────────────────────────────────────────────────────────
 
     void Start()
     {
         runeSystem.OnSuccess += OnRuneResolved;
         runeSystem.OnFail    += OnRuneResolved;
         
-        BuildRunes();
         ResetRuneCounter();
-        OcultarTodasLasRunas(); // Por seguridad, apagamos la UI al inicio
+        OcultarTodasLasRunas(); 
         
         StartBossFight();
     }
@@ -75,8 +71,6 @@ public class BossAttackController : MonoBehaviour
         StopAllCoroutines();
         OcultarTodasLasRunas();
     }
-
-    // ─── Loop principal ───────────────────────────────────────────────────────
 
     IEnumerator AttackLoop()
     {
@@ -104,8 +98,6 @@ public class BossAttackController : MonoBehaviour
         }
     }
 
-    // ─── Ataque normal ────────────────────────────────────────────────────────
-
     IEnumerator NormalAttack()
     {
         int[] lanes = PickLanes();
@@ -118,16 +110,14 @@ public class BossAttackController : MonoBehaviour
             SpawnProjectile(lane);
     }
 
-    // ─── Ataque de runa ───────────────────────────────────────────────────────
-
     IEnumerator RuneAttack()
     {
         waitingForRune = true;
         
-        // 1. Iniciamos el reto en el sistema. Esto hace que RuneSystem elija una runa al azar.
+        // 1. Iniciamos el reto en el sistema.
         runeSystem.StartChallenge(runeChallengeTime);
 
-        // 2. Leemos qué runa acaba de elegir RuneSystem y prendemos su imagen en el Canvas.
+        // 2. Leemos qué runa real acaba de elegir y prendemos su imagen
         if (runeSystem.runaForzada != null)
         {
             MostrarRuna(runeSystem.runaForzada.runeName);
@@ -139,10 +129,8 @@ public class BossAttackController : MonoBehaviour
     void OnRuneResolved()
     {
         waitingForRune = false;
-        OcultarTodasLasRunas(); // Apagamos la UI en cuanto acierte o falle
+        OcultarTodasLasRunas(); 
     }
-
-    // ─── Lógica de UI (Nuevo) ────────────────────────────────────────────────
 
     public void MostrarRuna(string letraRuna)
     {
@@ -163,50 +151,17 @@ public class BossAttackController : MonoBehaviour
         if (runaImageZ != null) runaImageZ.SetActive(false);
     }
 
-    // ─── Selección de patrón ─────────────────────────────────────────────────
-
     int[] PickLanes()
     {
         int playerLane = laneSystem.CurrentLane;
         float roll = Random.Range(0f, WeightSingle + WeightDouble);
 
-        if (roll < WeightSingle)
-        {
-            return new int[] { playerLane };
-        }
-        else
-        {
-            int other;
-            do { other = Random.Range(0, 3); } while (other == playerLane);
-            return new int[] { playerLane, other };
-        }
+        if (roll < WeightSingle) return new int[] { playerLane };
+        
+        int other;
+        do { other = Random.Range(0, 3); } while (other == playerLane);
+        return new int[] { playerLane, other };
     }
-
-    void BuildRunes()
-    {
-        var runas = new List<RuneDefinition>();
-
-        if (runaImageC != null) runas.Add(CreateRune("C"));
-        if (runaImageW != null) runas.Add(CreateRune("W"));
-        if (runaImageZ != null) runas.Add(CreateRune("Z"));
-
-        if (runas.Count == 0)
-        {
-            Debug.LogWarning("[BossAttackController] No hay runas asignadas en el Canvas.");
-            return;
-        }
-
-        runeSystem.availableRunes = runas.ToArray();
-    }
-
-    RuneDefinition CreateRune(string nombre)
-    {
-        var runa = ScriptableObject.CreateInstance<RuneDefinition>();
-        runa.runeName = nombre;
-        return runa;
-    }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     void ResetRuneCounter()
     {
@@ -232,7 +187,7 @@ public class BossAttackController : MonoBehaviour
 
     void SpawnProjectile(int lane)
     {
-        if (projectilePrefab == null) { Debug.LogWarning("Falta prefab de proyectil."); return; }
+        if (projectilePrefab == null) return;
         float x = laneSystem.PositionsX[lane];
         var proj = Instantiate(projectilePrefab, new Vector3(x, spawnY, 0f), Quaternion.identity);
         var bp = proj.GetComponent<BossProjectile>();
