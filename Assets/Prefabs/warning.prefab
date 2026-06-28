@@ -80,7 +80,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: -1816509910, guid: 86a9bbf1623419f4d82af7d5808757fd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -104,3 +104,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1efb86ad43683b64ca903df8253956d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeteorWarning
+  offsetYDesdeCentro: 4.5

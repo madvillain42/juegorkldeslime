@@ -1708,7 +1708,7 @@ SpriteRenderer:
   m_SortingOrder: -1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 27cc9d8b5908a8348ad3a9fa682a78a9, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.27020293, g: 0.77254903, b: 0.9490196, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
@@ -2079,9 +2079,9 @@ MonoBehaviour:
   obstaclePrefab: {fileID: 3676078639225418988, guid: a6a7f3189237d5746b438da9b5ace71e, type: 3}
   boxPrefab: {fileID: 5804730549814297105, guid: 3cb8df566038d2947b30f2dc6795d01b, type: 3}
   sierraPrefab: {fileID: 3073047218831489623, guid: e5917d9531ba4c04796b9009ced7bb29, type: 3}
-  spikesPrefab: {fileID: 1129572916519896080, guid: f50c7da9b307a6b478abfa69ba819755, type: 3}
+  spikesPrefab: {fileID: 1129572916519896080, guid: 9313bcba435e4204bab87179ca498daa, type: 3}
   warningPrefab: {fileID: 1753796738248989766, guid: 1dd40f0f96ee70740a9d7e62dd43763c, type: 3}
-  fireballPrefab: {fileID: 7061251156638238726, guid: 9d207df8b2cfa944d8687a1db59d8d38, type: 3}
+  fireballPrefab: {fileID: 25137189338379242, guid: 9d44c51935fdacb419c79066a64bf97d, type: 3}
   warningSound: {fileID: 0}
   probabilidadMeteoro: 0.15
   tiempoAdvertencia: 1
@@ -3070,7 +3070,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -5521563659134552697, guid: f9252fe6e572e3c4aa3500b54f38cfd8, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.504717, g: 0.7448464, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

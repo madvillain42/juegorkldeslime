@@ -83,7 +83,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0.4339623, g: 0.10849057, b: 0.10849057, a: 1}
@@ -110,6 +110,11 @@ MonoBehaviour:
   detectionRadius: 8
   runaRequerida: {fileID: 0}
   colorCaja: {r: 0.2, g: 0.8, b: 1, a: 1}
+  prefabEfectoViento: {fileID: 0}
+  prefabIconoFlotante: {fileID: 4489490212190423830, guid: c7f7a3554bbf2ad468b767cef7bad7b4, type: 3}
+  "spriteDa\xF1o": {fileID: 561755854311865091, guid: 7e7c0387b72a5e74d9cabf3af9af073f, type: 3}
+  spriteEscudo: {fileID: 21300000, guid: ef7f7698097a22e4aaad7fd970cd41db, type: 3}
+  spriteVelocidad: {fileID: 21300000, guid: 794fa773b79f9f6448605c7dca657a83, type: 3}
 --- !u!61 &5439601739017448108
 BoxCollider2D:
   m_ObjectHideFlags: 0

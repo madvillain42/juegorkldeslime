@@ -11,6 +11,13 @@ public class BoxWithRune : MonoBehaviour
     [Header("Visual")]
     [SerializeField] private Color colorCaja = new Color(1f, 0.2f, 0.2f);
 
+    [Header("Efectos Visuales (Feedback)")]
+    [SerializeField] private GameObject prefabEfectoViento;
+    [SerializeField] private GameObject prefabIconoFlotante;
+    [SerializeField] private Sprite spriteDaño;
+    [SerializeField] private Sprite spriteEscudo;
+    [SerializeField] private Sprite spriteVelocidad;
+
     private SpriteRenderer sr;
     private Collider2D col;
     private bool yaAbierta = false;
@@ -80,29 +87,54 @@ public class BoxWithRune : MonoBehaviour
     {
         yaAbierta = true;
 
+        // 1. Instanciar el efecto de Viento en la posición de la poción
+        if (prefabEfectoViento != null)
+        {
+            Instantiate(prefabEfectoViento, transform.position, Quaternion.identity);
+        }
+
+        Sprite iconoMostrar = null;
+
         if (GameManager.Instance != null)
         {
             switch (potionType)
             {
                 case PotionType.Damage:
                     GameManager.Instance.AplicarPocionDano();
+                    iconoMostrar = spriteDaño;
                     Debug.Log("[BoxWithRune] ⚔️ +Daño");
                     break;
                 case PotionType.Shield:
                     GameManager.Instance.AplicarPocionEscudo();
+                    iconoMostrar = spriteEscudo;
                     Debug.Log("[BoxWithRune] 🛡️ Escudo");
                     break;
                 case PotionType.Speed:
                     GameManager.Instance.AplicarPocionVelocidad();
                     SlimeController slime = FindFirstObjectByType<SlimeController>();
                     if (slime != null) slime.ActualizarCooldownDash();
+                    iconoMostrar = spriteVelocidad;
                     Debug.Log("[BoxWithRune] ⚡ +Velocidad");
                     break;
             }
         }
 
-        if (sr != null) sr.color = Color.green;
-        Invoke(nameof(Destruir), 0.2f);
+        // 2. Instanciar el Icono Flotante sobre el jugador
+        if (prefabIconoFlotante != null && iconoMostrar != null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                Vector3 posicionIcono = player.transform.position + new Vector3(0, 1f, 0);
+                GameObject nuevoIcono = Instantiate(prefabIconoFlotante, posicionIcono, Quaternion.identity);
+                
+                EfectoIconoFlotante efecto = nuevoIcono.GetComponent<EfectoIconoFlotante>();
+                if (efecto != null) efecto.IniciarEfecto(iconoMostrar);
+            }
+        }
+
+        // 3. Destruimos la caja de inmediato para que el viento sea el protagonista visual
+        Destruir();
     }
 
     void Destruir() => Destroy(gameObject);
