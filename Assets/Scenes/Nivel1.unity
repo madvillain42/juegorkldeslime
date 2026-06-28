@@ -1640,11 +1640,15 @@ MonoBehaviour:
   runaZ: {fileID: 11400000, guid: d37c50ee536c3fd4f860dcb5dee7ce88, type: 2}
   runaC: {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
   runaW: {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
+  spriteRunaZ: {fileID: 0}
+  spriteRunaC: {fileID: 0}
+  spriteRunaW: {fileID: 0}
   probabilidadCaja: 0.1
   probabilidadSierra: 0.2
   probabilidadPuas: 0.5
   difficultyIncreaseRate: 0.01
   maxObstaclesOnScreen: 6
+  minDistanciaEntrePuas: 4
 --- !u!4 &1509121469
 Transform:
   m_ObjectHideFlags: 0
