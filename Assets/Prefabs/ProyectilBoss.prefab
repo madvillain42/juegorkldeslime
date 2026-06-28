@@ -104,4 +104,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 988329d8937a27940be6a0952d0ce766, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossProjectile
-  speed: 23
+  speed: 19
