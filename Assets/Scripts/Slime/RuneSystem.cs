@@ -36,7 +36,7 @@ public class RuneSystem : MonoBehaviour
     public bool IsActive { get; private set; } = false;
 
     // En modo forzado, esta es la runa que el jefe pidió
-    private RuneDefinition runaForzada = null;
+    public RuneDefinition runaForzada = null; // <--- ¡AQUÍ ESTÁ EL CAMBIO QUE NECESITÁBAMOS!
 
     private List<Vector2> drawnPoints = new List<Vector2>();
     private bool isDrawing = false;
