@@ -1640,9 +1640,9 @@ MonoBehaviour:
   runaZ: {fileID: 11400000, guid: d37c50ee536c3fd4f860dcb5dee7ce88, type: 2}
   runaC: {fileID: 11400000, guid: 2b323a272d4cb4f478071cea0f5390c0, type: 2}
   runaW: {fileID: 11400000, guid: 1b543053e7b363a40b58bbaa0ca31319, type: 2}
-  spriteRunaZ: {fileID: 0}
-  spriteRunaC: {fileID: 0}
-  spriteRunaW: {fileID: 0}
+  spriteRunaZ: {fileID: -5770968474499277608, guid: 2ba722a2070133440b6b3065b156b576, type: 3}
+  spriteRunaC: {fileID: 5407397696729250591, guid: c3f3c6de3b26e7446bb7859d42cea7b0, type: 3}
+  spriteRunaW: {fileID: -7473315769732831383, guid: bdbce32cfefa7234f9ea749b45f18a6c, type: 3}
   probabilidadCaja: 0.1
   probabilidadSierra: 0.2
   probabilidadPuas: 0.5
