@@ -13,6 +13,7 @@ public class BoxWithRune : MonoBehaviour
 
     [Header("Efectos Visuales (Feedback)")]
     [SerializeField] private GameObject prefabEfectoViento;
+    [SerializeField] private float duracionEfectoViento = 2f;
     [SerializeField] private GameObject prefabIconoFlotante;
     [SerializeField] private Sprite spriteDaño;
     [SerializeField] private Sprite spriteEscudo;
@@ -87,10 +88,24 @@ public class BoxWithRune : MonoBehaviour
     {
         yaAbierta = true;
 
-        // 1. Instanciar el efecto de Viento en la posición de la poción
+        // 1. Instanciar el efecto de Viento y reproducirlo solo una vez
         if (prefabEfectoViento != null)
         {
-            Instantiate(prefabEfectoViento, transform.position, Quaternion.identity);
+            GameObject efectoViento = Instantiate(prefabEfectoViento, transform.position, Quaternion.identity);
+
+            // Desactivar el loop del ParticleSystem si tiene uno
+            ParticleSystem ps = efectoViento.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                var main = ps.main;
+                main.loop = false;
+                Destroy(efectoViento, main.duration + main.startLifetime.constantMax);
+            }
+            else
+            {
+                // Fallback: destruir después de la duración configurada
+                Destroy(efectoViento, duracionEfectoViento);
+            }
         }
 
         Sprite iconoMostrar = null;

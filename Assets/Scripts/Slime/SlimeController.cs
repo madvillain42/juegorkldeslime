@@ -30,11 +30,17 @@ public class SlimeController : MonoBehaviour
     [SerializeField] private Color colorDaño  = new Color(1f, 0.2f, 0.2f, 1f);
     [SerializeField] private float tiempoInvulnerabilidad = 1.5f;
 
+    [Header("Sonidos")]
+    [SerializeField] private AudioClip sonidoSalto;
+    [SerializeField] private AudioClip sonidoTocaPared;
+    [SerializeField] private AudioClip sonidoMuerte;
+
     [Header("Botón de Runa")]
     [SerializeField] private RuneButton runeButton;
 
     private Rigidbody2D rb;
     private SpriteRenderer sr;
+    private AudioSource audioSource;
     private int jumpCount = 0;
     private bool isTouchingWall = false;
     private bool isTouchingGround = false;
@@ -64,6 +70,12 @@ public class SlimeController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
+        audioSource = GetComponent<AudioSource>();
+
+        // Si no tiene AudioSource lo agrega automáticamente
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+
         originalGravity = rb.gravityScale;
         transform.localScale = tamañoSlime;
 
@@ -135,6 +147,10 @@ public class SlimeController : MonoBehaviour
 
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
+
+        // Sonido de muerte
+        if (sonidoMuerte != null)
+            audioSource.PlayOneShot(sonidoMuerte);
 
         StartCoroutine(SecuenciaMuerte());
     }
@@ -319,6 +335,10 @@ public class SlimeController : MonoBehaviour
 
         jumpCount++;
 
+        // Sonido de salto
+        if (sonidoSalto != null)
+            audioSource.PlayOneShot(sonidoSalto);
+
         if (isTouchingGround)
         {
             direccionActualX = (transform.position.x < 0) ? 1f : -1f;
@@ -372,13 +392,16 @@ public class SlimeController : MonoBehaviour
             isTouchingWall = true;
             jumpCount = 0;
             rb.linearVelocity = Vector2.zero;
+
+            // Sonido de toca pared
+            if (sonidoTocaPared != null)
+                audioSource.PlayOneShot(sonidoTocaPared);
         }
 
         if (collision.gameObject.CompareTag("Obstacle"))
         {
             Vector2 contactNormal = collision.contacts[0].normal;
 
-            // Si la normal apunta hacia arriba (Slime cayendo o aterrizando sobre el obstáculo)
             if (contactNormal.y > 0.5f)
             {
                 isTouchingGround = true;
