@@ -61,6 +61,6 @@ public class BossHealth : MonoBehaviour
     void UpdateText()
     {
         if (lifeText != null)
-            lifeText.text = $"Actual Life: {CurrentHP}/{maxHP}";
+            lifeText.text = $"{CurrentHP}/{maxHP}";
     }
 }
