@@ -201,7 +201,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.30535775, g: 0.8867924, b: 0.8149182, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -277,7 +277,7 @@ SpriteRenderer:
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.6415094, g: 0, b: 0.5633042, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -351,7 +351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.35294697, g: 0.6132076, b: 0.32106623, a: 1}
+  m_Color: {r: 0, g: 0.9150835, b: 0.9245283, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -739,7 +739,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.30535775, g: 0.8867924, b: 0.8149182, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -830,7 +830,7 @@ SpriteRenderer:
   m_SortingOrder: -4
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1980601219487944014, guid: c59b9ffa68c7a834d88b38a381f38ccf, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.64907444, g: 0.9622642, b: 0.9224025, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1157,7 +1157,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.30535775, g: 0.8867924, b: 0.8149182, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1308,7 +1308,7 @@ SpriteRenderer:
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.6415094, g: 0, b: 0.5633042, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1478,7 +1478,7 @@ SpriteRenderer:
   m_SortingOrder: -5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 27cc9d8b5908a8348ad3a9fa682a78a9, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.5896226, g: 0.758399, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
@@ -1857,7 +1857,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1219578371768908172, guid: 080fa2ccfcf2b124db637c2fafbf33f1, type: 3}
+  m_Sprite: {fileID: -4753702385071775785, guid: 066576416595a674093107f5dbab4c49, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1896,7 +1896,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossAttackController
   laneSystem: {fileID: 1395538736}
   runeSystem: {fileID: 1502744925}
-  projectilePrefab: {fileID: 2070267365791766182, guid: b22cd467bf4a679438a80d5f1c9e10ea, type: 3}
+  projectilePrefab: {fileID: 2164623310521302221, guid: 12b199bb98a447346854cb5d24c4251b, type: 3}
   warningPrefab: {fileID: 6146782284960340562, guid: 02c7c5305256c634c9324389e582f899, type: 3}
   warningY: 0
   spawnY: 3
@@ -1939,7 +1939,7 @@ Animator:
   m_GameObject: {fileID: 1617789200}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 3e3ee5285dda7f0449f2b846aa3e82f0, type: 2}
+  m_Controller: {fileID: 9100000, guid: a8dd08c54ce90004bac13676696f8258, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -2108,7 +2108,7 @@ SpriteRenderer:
   m_SortingOrder: -4
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1980601219487944014, guid: c59b9ffa68c7a834d88b38a381f38ccf, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.64907444, g: 0.9622642, b: 0.9224025, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2433,7 +2433,7 @@ SpriteRenderer:
   m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3700204024840866407, guid: 47d56e1242a73be40bcc22a40c6d54b4, type: 3}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.6415094, g: 0, b: 0.5633042, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
