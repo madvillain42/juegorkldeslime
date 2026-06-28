@@ -27,8 +27,8 @@ public class SlimeController : MonoBehaviour
     [SerializeField] private Color auraColorCooldown = new Color(0.3f, 0.8f, 1f, 1f);
 
     [Header("Vida y Daño")]
-    [SerializeField] private Color colorDaño  = new Color(1f, 0.2f, 0.2f, 1f); // Flash rojo al recibir daño
-    [SerializeField] private float tiempoInvulnerabilidad = 1.5f;               // Segundos de invulnerabilidad tras daño
+    [SerializeField] private Color colorDaño  = new Color(1f, 0.2f, 0.2f, 1f);
+    [SerializeField] private float tiempoInvulnerabilidad = 1.5f;
 
     [Header("Botón de Runa")]
     [SerializeField] private RuneButton runeButton;
@@ -108,16 +108,13 @@ public class SlimeController : MonoBehaviour
     {
         if (!estaVivo || esInvulnerable) return;
 
-        // Intentar consumir escudo primero
         if (GameManager.Instance != null && GameManager.Instance.ConsumirEscudo())
         {
-            Debug.Log("[SlimeController] Escudo absorbió el golpe");
             StartCoroutine(FlashDaño());
             StartCoroutine(PeriodoInvulnerabilidad());
             return;
         }
 
-        // Sin escudo → muerte
         Morir();
     }
 
@@ -126,17 +123,12 @@ public class SlimeController : MonoBehaviour
         if (!estaVivo) return;
         estaVivo = false;
 
-        Debug.Log("[SlimeController] ¡El slime murió!");
-
-        // Restaurar tiempo por si estaba en slow motion
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
 
-        // Desactivar física
         rb.linearVelocity = Vector2.zero;
         rb.gravityScale = 0f;
 
-        // Flash rojo y desaparecer
         StartCoroutine(SecuenciaMuerte());
     }
 
@@ -150,16 +142,13 @@ public class SlimeController : MonoBehaviour
         if (sr != null) sr.enabled = false;
         yield return new WaitForSeconds(0.5f);
 
-        // Game Over
+        // Cambiar estado a GameOver — GameOverUI mostrará el panel
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetStats();
             GameManager.Instance.ChangeState(GameState.GameOver);
         }
-
-        // Recargar la escena actual
-        UnityEngine.SceneManagement.SceneManager.LoadScene(
-            UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+        // ← Sin reload automático, lo maneja el botón Reintentar
     }
 
     IEnumerator FlashDaño()
@@ -174,7 +163,6 @@ public class SlimeController : MonoBehaviour
     {
         esInvulnerable = true;
 
-        // Parpadeo durante la invulnerabilidad
         float elapsed = 0f;
         while (elapsed < tiempoInvulnerabilidad)
         {
@@ -394,7 +382,6 @@ public class SlimeController : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
         }
 
-        // Objetos letales — tag "Lethal"
         if (collision.gameObject.CompareTag("Lethal"))
             RecibirDaño();
     }
@@ -412,7 +399,6 @@ public class SlimeController : MonoBehaviour
         if (collision.gameObject.CompareTag("Obstacle")) isTouchingWall = false;
     }
 
-    // Trigger para púas y lava (objetos que matan sin colisión física)
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Lethal"))
