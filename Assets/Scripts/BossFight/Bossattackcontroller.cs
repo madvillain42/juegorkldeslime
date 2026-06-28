@@ -27,17 +27,17 @@ public class BossAttackController : MonoBehaviour
     public int   maxPatternsBeforeRune = 4;
     public float runeChallengeTime     = 4f;
 
-    [Header("Sprites de Runas")]
-    public Sprite spriteRunaC;
-    public Sprite spriteRunaW;
-    public Sprite spriteRunaZ;
+    [Header("Imágenes de Runas (UI en Canvas)")]
+    public GameObject runaImageC;
+    public GameObject runaImageW;
+    public GameObject runaImageZ;
 
     private bool isActive      = false;
     private int  patternCount  = 0;
     private int  patternsUntilRune;
     private bool waitingForRune = false;
 
-    // Pesos de cada patrón (no necesitan ScriptableObject)
+    // Pesos de cada patrón
     private const float WeightSingle = 0.50f;
     private const float WeightDouble = 0.50f;
 
@@ -47,8 +47,11 @@ public class BossAttackController : MonoBehaviour
     {
         runeSystem.OnSuccess += OnRuneResolved;
         runeSystem.OnFail    += OnRuneResolved;
+        
         BuildRunes();
         ResetRuneCounter();
+        OcultarTodasLasRunas(); // Por seguridad, apagamos la UI al inicio
+        
         StartBossFight();
     }
 
@@ -70,6 +73,7 @@ public class BossAttackController : MonoBehaviour
     {
         isActive = false;
         StopAllCoroutines();
+        OcultarTodasLasRunas();
     }
 
     // ─── Loop principal ───────────────────────────────────────────────────────
@@ -119,11 +123,45 @@ public class BossAttackController : MonoBehaviour
     IEnumerator RuneAttack()
     {
         waitingForRune = true;
+        
+        // 1. Iniciamos el reto en el sistema. Esto hace que RuneSystem elija una runa al azar.
         runeSystem.StartChallenge(runeChallengeTime);
+
+        // 2. Leemos qué runa acaba de elegir RuneSystem y prendemos su imagen en el Canvas.
+        if (runeSystem.runaForzada != null)
+        {
+            MostrarRuna(runeSystem.runaForzada.runeName);
+        }
+
         yield return new WaitUntil(() => !waitingForRune);
     }
 
-    void OnRuneResolved() => waitingForRune = false;
+    void OnRuneResolved()
+    {
+        waitingForRune = false;
+        OcultarTodasLasRunas(); // Apagamos la UI en cuanto acierte o falle
+    }
+
+    // ─── Lógica de UI (Nuevo) ────────────────────────────────────────────────
+
+    public void MostrarRuna(string letraRuna)
+    {
+        OcultarTodasLasRunas();
+
+        switch (letraRuna.ToUpper())
+        {
+            case "C": if (runaImageC != null) runaImageC.SetActive(true); break;
+            case "W": if (runaImageW != null) runaImageW.SetActive(true); break;
+            case "Z": if (runaImageZ != null) runaImageZ.SetActive(true); break;
+        }
+    }
+
+    public void OcultarTodasLasRunas()
+    {
+        if (runaImageC != null) runaImageC.SetActive(false);
+        if (runaImageW != null) runaImageW.SetActive(false);
+        if (runaImageZ != null) runaImageZ.SetActive(false);
+    }
 
     // ─── Selección de patrón ─────────────────────────────────────────────────
 
@@ -134,12 +172,10 @@ public class BossAttackController : MonoBehaviour
 
         if (roll < WeightSingle)
         {
-            // Siempre ataca el carril del jugador
             return new int[] { playerLane };
         }
         else
         {
-            // Ataca el carril del jugador + uno aleatorio distinto
             int other;
             do { other = Random.Range(0, 3); } while (other == playerLane);
             return new int[] { playerLane, other };
@@ -150,24 +186,23 @@ public class BossAttackController : MonoBehaviour
     {
         var runas = new List<RuneDefinition>();
 
-        if (spriteRunaC != null) runas.Add(CreateRune("C", spriteRunaC));
-        if (spriteRunaW != null) runas.Add(CreateRune("W", spriteRunaW));
-        if (spriteRunaZ != null) runas.Add(CreateRune("Z", spriteRunaZ));
+        if (runaImageC != null) runas.Add(CreateRune("C"));
+        if (runaImageW != null) runas.Add(CreateRune("W"));
+        if (runaImageZ != null) runas.Add(CreateRune("Z"));
 
         if (runas.Count == 0)
         {
-            Debug.LogWarning("[BossAttackController] No hay sprites de runas asignados.");
+            Debug.LogWarning("[BossAttackController] No hay runas asignadas en el Canvas.");
             return;
         }
 
         runeSystem.availableRunes = runas.ToArray();
     }
 
-    RuneDefinition CreateRune(string nombre, Sprite sprite)
+    RuneDefinition CreateRune(string nombre)
     {
         var runa = ScriptableObject.CreateInstance<RuneDefinition>();
-        runa.runeName      = nombre;
-        runa.displaySprite = sprite;
+        runa.runeName = nombre;
         return runa;
     }
 

@@ -905,8 +905,8 @@ RectTransform:
   m_GameObject: {fileID: 1529158590}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 590463847}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1071,9 +1071,9 @@ MonoBehaviour:
   minPatternsBeforeRune: 18
   maxPatternsBeforeRune: 23
   runeChallengeTime: 4
-  spriteRunaC: {fileID: -2798962709791255828, guid: df0635b22a9e1714fb89bc6eef8646a3, type: 3}
-  spriteRunaW: {fileID: 4565944355725826448, guid: a512202d9290f6d43be28aac5956639a, type: 3}
-  spriteRunaZ: {fileID: -6239502131056454743, guid: b878c7ad5c41a424b915623511282b4a, type: 3}
+  runaImageC: {fileID: 1873117381}
+  runaImageW: {fileID: 1677746289}
+  runaImageZ: {fileID: 1529158590}
 --- !u!114 &1617789204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1114,8 +1114,8 @@ RectTransform:
   m_GameObject: {fileID: 1677746289}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 590463847}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1326,8 +1326,8 @@ RectTransform:
   m_GameObject: {fileID: 1873117381}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 590463847}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
