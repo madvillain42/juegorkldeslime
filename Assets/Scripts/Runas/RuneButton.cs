@@ -11,7 +11,7 @@ public class RuneButton : MonoBehaviour
     [SerializeField] private RuneSystem runeSystem;
 
     [Header("Colores del Botón")]
-    [SerializeField] private Color colorActivo    = new Color(0.2f, 0.8f, 1f);
+    // Se eliminó colorActivo para usar el color por defecto del componente Image
     [SerializeField] private Color colorCooldown  = new Color(0.4f, 0.4f, 0.4f);
     [SerializeField] private Color colorDibujando = new Color(1f, 0.8f, 0.1f);
 
@@ -28,6 +28,8 @@ public class RuneButton : MonoBehaviour
     private float cooldownTimer = 0f;
     private float drawTimer     = 0f;
 
+    private Color colorPorDefecto; // Aquí guardaremos tu color original
+
     private InputAction drawAction;
 
     // Estado del press manual
@@ -35,6 +37,12 @@ public class RuneButton : MonoBehaviour
 
     void Start()
     {
+        // Guardamos el color original que configuraste en el Inspector de Unity
+        if (imagenBoton != null)
+        {
+            colorPorDefecto = imagenBoton.color;
+        }
+
         // Solo necesitamos la posición del mouse/touch para el trazo
         drawAction = new InputAction("Draw", binding: "<Touchscreen>/primaryTouch/position");
         drawAction.AddBinding("<Mouse>/position");
@@ -184,8 +192,11 @@ public class RuneButton : MonoBehaviour
     void ActualizarColorBoton()
     {
         if (imagenBoton == null) return;
-        imagenBoton.color = enCooldown        ? colorCooldown :
-                            boton.interactable ? colorActivo   :
+        
+        // Si está en cooldown o no se puede presionar (ej. tocando el suelo), se vuelve gris.
+        // Si está interactable, restaura el color original que le diste en Unity.
+        imagenBoton.color = enCooldown         ? colorCooldown :
+                            boton.interactable ? colorPorDefecto :
                                                  colorCooldown;
     }
 }
