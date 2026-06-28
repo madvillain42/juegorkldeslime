@@ -478,6 +478,8 @@ MonoBehaviour:
   target: {fileID: 677471748}
   smoothSpeed: 5
   offsetY: 2
+  usarLimiteY: 1
+  limiteMaximoY: 700
 --- !u!1 &554821606
 GameObject:
   m_ObjectHideFlags: 0
@@ -1203,8 +1205,13 @@ MonoBehaviour:
   boxPrefab: {fileID: 5804730549814297105, guid: 3cb8df566038d2947b30f2dc6795d01b, type: 3}
   sierraPrefab: {fileID: 3073047218831489623, guid: e5917d9531ba4c04796b9009ced7bb29, type: 3}
   spikesPrefab: {fileID: 1129572916519896080, guid: f50c7da9b307a6b478abfa69ba819755, type: 3}
+<<<<<<< HEAD
   warningPrefab: {fileID: 0}
   fireballPrefab: {fileID: 0}
+=======
+  warningPrefab: {fileID: 1753796738248989766, guid: 1dd40f0f96ee70740a9d7e62dd43763c, type: 3}
+  fireballPrefab: {fileID: 7061251156638238726, guid: 9d207df8b2cfa944d8687a1db59d8d38, type: 3}
+>>>>>>> c6f6799fb6c5de61f197e343f9aa377575750712
   warningSound: {fileID: 0}
   probabilidadMeteoro: 0.15
   tiempoAdvertencia: 1

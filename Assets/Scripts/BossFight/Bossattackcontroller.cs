@@ -50,11 +50,11 @@ public class BossAttackController : MonoBehaviour
         anim = GetComponent<Animator>();
         runeSystem.OnSuccess += OnRuneResolved;
         runeSystem.OnFail    += OnRuneResolved;
-        
+ 
         BuildRunes();
         ResetRuneCounter();
         OcultarTodasLasRunas(); // Por seguridad, apagamos la UI al inicio
-        
+
         StartBossFight();
     }
  
@@ -129,7 +129,7 @@ public class BossAttackController : MonoBehaviour
     IEnumerator RuneAttack()
     {
         waitingForRune = true;
-        
+ 
         // 1. Iniciamos el reto en el sistema. Esto hace que RuneSystem elija una runa al azar.
         runeSystem.StartChallenge(runeChallengeTime);
  
