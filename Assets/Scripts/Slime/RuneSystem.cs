@@ -17,6 +17,11 @@ public class RuneSystem : MonoBehaviour
     public float matchThreshold = 0.35f;
     public int segmentCount = 16;
 
+    [Header("Modo")]
+    // Escalada → true  (jugador dibuja lo que quiere, abre cajas)
+    // Bossfight → false (el jefe pide una runa específica)
+    public bool modoLibre = true;
+
     [Header("Colores de Estela")]
     public Color[] traceColors = new Color[]
     {
@@ -25,11 +30,13 @@ public class RuneSystem : MonoBehaviour
         new Color(0.4f, 1f, 0.4f)
     };
 
-    // Evento con la runa detectada — BoxWithRune lo usa para abrir la caja correcta
     public event System.Action<RuneDefinition> OnSuccessWithRune;
     public event System.Action OnSuccess;
     public event System.Action OnFail;
     public bool IsActive { get; private set; } = false;
+
+    // En modo forzado, esta es la runa que el jefe pidió
+    private RuneDefinition runaForzada = null;
 
     private List<Vector2> drawnPoints = new List<Vector2>();
     private bool isDrawing = false;
@@ -40,18 +47,38 @@ public class RuneSystem : MonoBehaviour
     {
         drawAction = draw;
         if (runePanel != null) runePanel.SetActive(false);
-        Debug.Log("[RuneSystem] Init completado");
     }
 
     public void Init(InputAction draw, InputAction press) => Init(draw);
 
-    // Ya no elige runa aleatoria — solo activa el modo dibujo
+    // ─── StartChallenge ───────────────────────────────────────────────────────
+    // Modo libre (escalada) → jugador dibuja lo que quiere
+    // Modo forzado (bossfight) → elige una runa aleatoria y la muestra
     public void StartChallenge(float timeLimit)
     {
+        if (availableRunes == null || availableRunes.Length == 0)
+        {
+            Debug.LogWarning("[RuneSystem] No hay runas asignadas");
+            return;
+        }
+
         drawnPoints.Clear();
         IsActive = true;
 
-        Debug.Log("[RuneSystem] Modo dibujo activado — dibuja lo que quieras");
+        if (!modoLibre)
+        {
+            // Bossfight: elegir runa aleatoria y mostrarla al jugador
+            runaForzada = availableRunes[Random.Range(0, availableRunes.Length)];
+            Debug.Log($"[RuneSystem] Modo forzado — Runa pedida: {runaForzada.runeName}");
+
+            if (runeTargetImage != null && runaForzada.displaySprite != null)
+                runeTargetImage.sprite = runaForzada.displaySprite;
+        }
+        else
+        {
+            runaForzada = null;
+            Debug.Log("[RuneSystem] Modo libre — dibuja lo que quieras");
+        }
 
         if (runePanel != null) runePanel.SetActive(true);
 
@@ -77,12 +104,10 @@ public class RuneSystem : MonoBehaviour
         drawnPoints.Clear();
         isDrawing = true;
         if (traceRenderer != null) traceRenderer.positionCount = 0;
-        Debug.Log("[RuneSystem] Empezó a dibujar");
     }
 
     public void NotifyPressEnded()
     {
-        Debug.Log($"[RuneSystem] Soltó — isDrawing: {isDrawing} | Puntos: {drawnPoints.Count}");
         if (!IsActive || !isDrawing) return;
         isDrawing = false;
         Evaluate();
@@ -109,7 +134,6 @@ public class RuneSystem : MonoBehaviour
 
     void Evaluate()
     {
-        Debug.Log($"[RuneSystem] Evaluando — Puntos: {drawnPoints.Count}");
         if (drawnPoints.Count < 5) { Fail(); return; }
 
         List<Vector2> normalized = NormalizePoints(drawnPoints);
@@ -129,13 +153,32 @@ public class RuneSystem : MonoBehaviour
             }
         }
 
-        // Exitoso si el mejor score supera el threshold — sin importar cuál runa fue
         if (bestScore >= matchThreshold && bestRune != null)
         {
-            Debug.Log($"[RuneSystem] ✅ Runa detectada: {bestRune.runeName} | Score: {bestScore:F2}");
-            End();
-            OnSuccess?.Invoke();
-            OnSuccessWithRune?.Invoke(bestRune); // Pasa la runa detectada a las cajas
+            if (!modoLibre)
+            {
+                // Bossfight: solo exitoso si dibujó la runa correcta
+                if (bestRune == runaForzada)
+                {
+                    Debug.Log($"[RuneSystem] ✅ Bossfight — Runa correcta: {bestRune.runeName}");
+                    End();
+                    OnSuccess?.Invoke();
+                    OnSuccessWithRune?.Invoke(bestRune);
+                }
+                else
+                {
+                    Debug.Log($"[RuneSystem] ❌ Bossfight — Runa incorrecta: {bestRune.runeName} | Pedía: {runaForzada?.runeName}");
+                    Fail();
+                }
+            }
+            else
+            {
+                // Escalada: exitoso con cualquier runa reconocida
+                Debug.Log($"[RuneSystem] ✅ Escalada — Runa detectada: {bestRune.runeName}");
+                End();
+                OnSuccess?.Invoke();
+                OnSuccessWithRune?.Invoke(bestRune);
+            }
         }
         else
         {
@@ -174,8 +217,9 @@ public class RuneSystem : MonoBehaviour
     void End()
     {
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
-        IsActive  = false;
-        isDrawing = false;
+        IsActive    = false;
+        isDrawing   = false;
+        runaForzada = null;
         drawnPoints.Clear();
         if (runePanel != null) runePanel.SetActive(false);
         if (traceRenderer != null) traceRenderer.enabled = false;
