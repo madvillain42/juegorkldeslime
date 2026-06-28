@@ -23,12 +23,17 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private GameObject sierraPrefab;
     [SerializeField] private GameObject spikesPrefab;
 
-    [Header("NUEVO: Configuración Bola de Fuego (Meteoro)")]
+    [Header("Configuración Bola de Fuego (Meteoro)")]
     [SerializeField] private GameObject warningPrefab;
     [SerializeField] private GameObject fireballPrefab;
     [SerializeField] private AudioClip warningSound;
-    [SerializeField] private float probabilidadMeteoro = 0.15f; // 15% de salir
-    [SerializeField] private float tiempoAdvertencia = 1.0f; // 1 segundo
+    [SerializeField] private float probabilidadMeteoro = 0.15f; 
+    [SerializeField] private float tiempoAdvertencia = 1.0f; 
+
+    [Header("Configuración de Meta (Jefe)")]
+    [SerializeField] private float alturaBoss = 700f; 
+    [SerializeField] private GameObject nieblaPrefab; 
+    private bool nieblaSpawneada = false;
 
     [Header("Runas para las Cajas")]
     [SerializeField] private RuneDefinition runaZ;
@@ -40,7 +45,7 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private Sprite spriteRunaC;
     [SerializeField] private Sprite spriteRunaW;
 
-    [Header("Probabilidades de Spawn (Resto)")]
+    [Header("Probabilidades de Spawn")]
     [SerializeField] private float probabilidadCaja   = 0.10f; 
     [SerializeField] private float probabilidadSierra = 0.35f; 
     [SerializeField] private float probabilidadPuas   = 0.40f; 
@@ -84,6 +89,20 @@ public class ObstacleSpawner : MonoBehaviour
         if (GameManager.Instance == null) return;
         if (GameManager.Instance.CurrentState != GameState.Climbing) return;
 
+        // Verifica si debe spawnear la niebla
+        if (player != null && player.position.y >= alturaBoss - spawnDistanceAhead && !nieblaSpawneada)
+        {
+            nieblaSpawneada = true;
+            
+            if (nieblaPrefab != null)
+            {
+                Instantiate(nieblaPrefab, new Vector3(0f, alturaBoss, 0f), Quaternion.identity);
+            }
+            
+            this.enabled = false; 
+            return;
+        }
+
         activeObstacles.RemoveAll(o => o == null);
 
         if (activeObstacles.Count >= maxObstaclesOnScreen) return;
@@ -106,13 +125,11 @@ public class ObstacleSpawner : MonoBehaviour
         float spawnY = player.position.y + spawnDistanceAhead;
         bool spawnoPuas = false;
 
-        // 1. Intentar spawnear Bola de Fuego (15% probabilidad)
         if (warningPrefab != null && fireballPrefab != null && Random.value < probabilidadMeteoro)
         {
             SpawnBolaDeFuego(spawnY);
         }
 
-        // 2. Intentar spawnear Púas
         if (spikesPrefab != null && Random.value < probabilidadPuas && spawnY - lastSpikesY >= minDistanciaEntrePuas)
         {
             SpawnPuas(spawnY);
@@ -120,7 +137,6 @@ public class ObstacleSpawner : MonoBehaviour
             spawnoPuas = true;
         }
 
-        // 3. Generar Cajas, Sierras u Obstáculos normales
         List<int> columnasDisponibles = new List<int> { 0, 1, 2 };
         int cantidadObstaculos = Random.Range(1, 3);
 
@@ -136,10 +152,7 @@ public class ObstacleSpawner : MonoBehaviour
 
             float roll = Random.value;
 
-            if (spawnoPuas && roll < probabilidadCaja)
-            {
-                roll = probabilidadCaja; 
-            }
+            if (spawnoPuas && roll < probabilidadCaja) roll = probabilidadCaja; 
 
             if (roll < probabilidadCaja) SpawnCaja(spawnPos);
             else if (roll < probabilidadCaja + probabilidadSierra) SpawnSierra(spawnPos);
@@ -149,22 +162,17 @@ public class ObstacleSpawner : MonoBehaviour
 
     void SpawnBolaDeFuego(float baseSpawnY)
     {
-        // Seleccionamos 1 de los 3 carriles de forma aleatoria
         int columnaElegida = Random.Range(0, 3);
         float targetX = columnCenters[columnaElegida];
 
-        // Ya no calculamos la Y aquí, el aviso se pegará a la cámara por sí solo
-        // Lo instanciamos temporalmente en 0 en Y, el script MeteorWarning lo corregirá al instante
         GameObject aviso = Instantiate(warningPrefab, new Vector3(targetX, 0f, 0f), Quaternion.identity);
         
         MeteorWarning scriptAviso = aviso.GetComponent<MeteorWarning>();
         if (scriptAviso != null)
         {
-            // Le pasamos el prefab del fuego, el tiempo de espera, la posición X y el sonido
             scriptAviso.Inicializar(fireballPrefab, tiempoAdvertencia, targetX, warningSound);
         }
         
-        // Lo añadimos a la lista para no exceder el límite en pantalla
         activeObstacles.Add(aviso);
     }
 
