@@ -721,6 +721,7 @@ GameObject:
   - component: {fileID: 1395538735}
   - component: {fileID: 1395538736}
   - component: {fileID: 1395538737}
+  - component: {fileID: 1395538738}
   m_Layer: 0
   m_Name: Slime
   m_TagString: Player
@@ -890,6 +891,22 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1395538738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395538729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1bcc9cf2f23f94459c930edbf42a5ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AtaqueJugador
+  runeSystem: {fileID: 1502744925}
+  bossHealth: {fileID: 1617789204}
+  danoPorRuna: 20
+  animatorPlayer: {fileID: 0}
 --- !u!114 &1502744925 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2396663129785350619, guid: 32ef72a0b699c7c4c94a96325df91c78, type: 3}
