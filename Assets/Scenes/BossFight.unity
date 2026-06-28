@@ -720,8 +720,8 @@ MonoBehaviour:
   laneSystem: {fileID: 1395538736}
   runeSystem: {fileID: 1395538737}
   projectilePrefab: {fileID: 5680367364581768779, guid: 00fbf30e5e36a7f4ca3f627bb3cba0b2, type: 3}
-  warningPrefab: {fileID: 8852655683462598271, guid: 02c7c5305256c634c9324389e582f899, type: 3}
-  warningY: 1
+  warningPrefab: {fileID: 6146782284960340562, guid: 02c7c5305256c634c9324389e582f899, type: 3}
+  warningY: 0
   spawnY: 3
   despawnY: -5
   attackInterval: 0.6
