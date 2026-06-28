@@ -56,6 +56,8 @@ public class SlimeController : MonoBehaviour
     private bool estaVivo = true;
     private bool esInvulnerable = false;
 
+    private Camera camaraPrincipal;
+
     private bool ModoRunaActivo => runeButton != null && runeButton.ModoRunaActivo;
 
     void Start()
@@ -64,6 +66,8 @@ public class SlimeController : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         originalGravity = rb.gravityScale;
         transform.localScale = tamañoSlime;
+
+        camaraPrincipal = Camera.main;
 
         flechaLine = gameObject.AddComponent<LineRenderer>();
         flechaLine.positionCount = 2;
@@ -89,6 +93,7 @@ public class SlimeController : MonoBehaviour
         if (ModoRunaActivo)
         {
             ActualizarBotonRuna();
+            VerificarLimitePantalla();
             return;
         }
 
@@ -99,6 +104,8 @@ public class SlimeController : MonoBehaviour
 
         if (isTouchingWall && !isTouchingGround && rb.linearVelocity.y < 0)
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, -wallSlideSpeed);
+
+        VerificarLimitePantalla();
     }
 
     // ─────────────────────────────────────────────
@@ -404,4 +411,15 @@ public class SlimeController : MonoBehaviour
         if (other.CompareTag("Lethal"))
             RecibirDaño();
     }
+
+    void VerificarLimitePantalla()
+    {
+        if (!estaVivo) return;
+
+        float limiteInferior = camaraPrincipal.ViewportToWorldPoint(new Vector3(0f, 0f, 0f)).y;
+
+        if (transform.position.y < limiteInferior - 1f)
+            Morir();
+    }
+
 }
