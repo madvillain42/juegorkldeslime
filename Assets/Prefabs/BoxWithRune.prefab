@@ -110,7 +110,7 @@ MonoBehaviour:
   detectionRadius: 8
   runaRequerida: {fileID: 0}
   colorCaja: {r: 0.2, g: 0.8, b: 1, a: 1}
-  prefabEfectoViento: {fileID: 0}
+  prefabEfectoViento: {fileID: 123411369401080218, guid: 53f44bfe9f2b27b468746c62055d024c, type: 3}
   prefabIconoFlotante: {fileID: 4489490212190423830, guid: c7f7a3554bbf2ad468b767cef7bad7b4, type: 3}
   "spriteDa\xF1o": {fileID: 561755854311865091, guid: 7e7c0387b72a5e74d9cabf3af9af073f, type: 3}
   spriteEscudo: {fileID: 21300000, guid: ef7f7698097a22e4aaad7fd970cd41db, type: 3}
