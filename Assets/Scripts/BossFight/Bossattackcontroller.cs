@@ -27,6 +27,11 @@ public class BossAttackController : MonoBehaviour
     public int   maxPatternsBeforeRune = 4;
     public float runeChallengeTime     = 4f;
 
+    [Header("Sprites de Runas")]
+    public Sprite spriteRunaC;
+    public Sprite spriteRunaW;
+    public Sprite spriteRunaZ;
+
     private bool isActive      = false;
     private int  patternCount  = 0;
     private int  patternsUntilRune;
@@ -42,6 +47,7 @@ public class BossAttackController : MonoBehaviour
     {
         runeSystem.OnSuccess += OnRuneResolved;
         runeSystem.OnFail    += OnRuneResolved;
+        BuildRunes();
         ResetRuneCounter();
         StartBossFight();
     }
@@ -138,6 +144,31 @@ public class BossAttackController : MonoBehaviour
             do { other = Random.Range(0, 3); } while (other == playerLane);
             return new int[] { playerLane, other };
         }
+    }
+
+    void BuildRunes()
+    {
+        var runas = new List<RuneDefinition>();
+
+        if (spriteRunaC != null) runas.Add(CreateRune("C", spriteRunaC));
+        if (spriteRunaW != null) runas.Add(CreateRune("W", spriteRunaW));
+        if (spriteRunaZ != null) runas.Add(CreateRune("Z", spriteRunaZ));
+
+        if (runas.Count == 0)
+        {
+            Debug.LogWarning("[BossAttackController] No hay sprites de runas asignados.");
+            return;
+        }
+
+        runeSystem.availableRunes = runas.ToArray();
+    }
+
+    RuneDefinition CreateRune(string nombre, Sprite sprite)
+    {
+        var runa = ScriptableObject.CreateInstance<RuneDefinition>();
+        runa.runeName      = nombre;
+        runa.displaySprite = sprite;
+        return runa;
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
