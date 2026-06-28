@@ -141,21 +141,17 @@ public class SlimeController : MonoBehaviour
 
     IEnumerator SecuenciaMuerte()
     {
-        // Flash rojo
         if (sr != null) sr.color = colorDaño;
         yield return new WaitForSeconds(0.3f);
 
-        // Desaparecer
         if (sr != null) sr.enabled = false;
         yield return new WaitForSeconds(0.5f);
 
-        // Cambiar estado a GameOver — GameOverUI mostrará el panel
         if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetStats();
             GameManager.Instance.ChangeState(GameState.GameOver);
         }
-        // ← Sin reload automático, lo maneja el botón Reintentar
     }
 
     IEnumerator FlashDaño()
@@ -378,15 +374,50 @@ public class SlimeController : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
         }
 
-        if (collision.gameObject.CompareTag("Obstacle") && !isTouchingGround)
+        if (collision.gameObject.CompareTag("Obstacle"))
         {
             Vector2 contactNormal = collision.contacts[0].normal;
-            if (contactNormal.x > 0.3f) direccionActualX = 1f;
-            else if (contactNormal.x < -0.3f) direccionActualX = -1f;
 
-            isTouchingWall = true;
-            jumpCount = 0;
-            rb.linearVelocity = Vector2.zero;
+            // Si la normal apunta hacia arriba (Slime cayendo o aterrizando sobre el obstáculo)
+            if (contactNormal.y > 0.5f)
+            {
+                isTouchingGround = true;
+                jumpCount = 0;
+                rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+
+                if (estaEnModoDash)
+                {
+                    Time.timeScale = 1f;
+                    Time.fixedDeltaTime = 0.02f;
+                    flechaLine.enabled = false;
+                    estaEnModoDash = false;
+                    holdTimer = 0f;
+                }
+            }
+            else
+            {
+                // REBOTE EN DIAGONAL (Knockback inteligente)
+                
+                // 1. Calculamos desde qué lado viene el Slime para empujarlo en dirección contraria
+                float direccionXRebote = (transform.position.x < collision.transform.position.x) ? -1f : 1f;
+                Vector2 direccionDiagonal;
+
+                // 2. Si el choque fue casi 100% vertical por abajo (contactNormal.y cercano a -1)
+                if (contactNormal.y < -0.5f)
+                {
+                    // Forzamos la diagonal hacia abajo y hacia atrás
+                    direccionDiagonal = new Vector2(direccionXRebote, -1f).normalized;
+                }
+                else
+                {
+                    // Si el choque fue más lateral, mantenemos su normal Y, pero aseguramos la fuerza en X
+                    direccionDiagonal = new Vector2(direccionXRebote, contactNormal.y).normalized;
+                }
+
+                // 3. Aplicamos el vector resultante
+                rb.linearVelocity = direccionDiagonal * baseHorizontalForce; 
+                isTouchingWall = false;
+            }
         }
 
         if (collision.gameObject.CompareTag("Lethal"))
@@ -397,13 +428,19 @@ public class SlimeController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Ground"))
             isTouchingGround = true;
+
+        if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            if (collision.contacts.Length > 0 && collision.contacts[0].normal.y > 0.5f)
+                isTouchingGround = true;
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Wall")) isTouchingWall = false;
         if (collision.gameObject.CompareTag("Ground")) isTouchingGround = false;
-        if (collision.gameObject.CompareTag("Obstacle")) isTouchingWall = false;
+        if (collision.gameObject.CompareTag("Obstacle")) isTouchingGround = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -421,5 +458,4 @@ public class SlimeController : MonoBehaviour
         if (transform.position.y < limiteInferior - 1f)
             Morir();
     }
-
 }
