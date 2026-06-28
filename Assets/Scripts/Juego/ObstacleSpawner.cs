@@ -14,16 +14,21 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private float spawnDistanceAhead = 8f;
     [SerializeField] private float minSpawnInterval = 2.5f;
     [SerializeField] private float maxSpawnInterval = 4.5f;
-
-    [Header("Variación de Posición")]
     [SerializeField] private float horizontalJitter = 0.4f;
-    [SerializeField] private float verticalJitter = 0.3f; // Bajado para evitar amontonamiento
+    [SerializeField] private float verticalJitter = 0.3f; 
 
-    [Header("Prefabs")]
+    [Header("Prefabs Originales")]
     [SerializeField] private GameObject obstaclePrefab;
     [SerializeField] private GameObject boxPrefab;
     [SerializeField] private GameObject sierraPrefab;
     [SerializeField] private GameObject spikesPrefab;
+
+    [Header("NUEVO: Configuración Bola de Fuego (Meteoro)")]
+    [SerializeField] private GameObject warningPrefab;
+    [SerializeField] private GameObject fireballPrefab;
+    [SerializeField] private AudioClip warningSound;
+    [SerializeField] private float probabilidadMeteoro = 0.15f; // 15% de salir
+    [SerializeField] private float tiempoAdvertencia = 1.0f; // 1 segundo
 
     [Header("Runas para las Cajas")]
     [SerializeField] private RuneDefinition runaZ;
@@ -35,19 +40,15 @@ public class ObstacleSpawner : MonoBehaviour
     [SerializeField] private Sprite spriteRunaC;
     [SerializeField] private Sprite spriteRunaW;
 
-    [Header("Probabilidades de Spawn")]
-    [SerializeField] private float probabilidadCaja   = 0.10f; // Pociones muy raras
-    [SerializeField] private float probabilidadSierra = 0.35f; // Sierras frecuentes
-    [SerializeField] private float probabilidadPuas   = 0.40f; // Púas muy frecuentes
-                                                                // 0.15 obstáculo normal
+    [Header("Probabilidades de Spawn (Resto)")]
+    [SerializeField] private float probabilidadCaja   = 0.10f; 
+    [SerializeField] private float probabilidadSierra = 0.35f; 
+    [SerializeField] private float probabilidadPuas   = 0.40f; 
 
     [Header("Dificultad")]
     [SerializeField] private float difficultyIncreaseRate = 0.01f;
-
-    [Header("Límite de Obstáculos en Pantalla")]
     [SerializeField] private int maxObstaclesOnScreen = 5;
 
-    // Separación mínima entre espinas para evitar que se amontonen
     private float lastSpikesY = -999f;
     [SerializeField] private float minDistanciaEntrePuas = 4f;
 
@@ -105,17 +106,21 @@ public class ObstacleSpawner : MonoBehaviour
         float spawnY = player.position.y + spawnDistanceAhead;
         bool spawnoPuas = false;
 
-        // Solo spawneamos púas si hay distancia suficiente
-        if (spikesPrefab != null && 
-            Random.value < probabilidadPuas && 
-            spawnY - lastSpikesY >= minDistanciaEntrePuas)
+        // 1. Intentar spawnear Bola de Fuego (15% probabilidad)
+        if (warningPrefab != null && fireballPrefab != null && Random.value < probabilidadMeteoro)
+        {
+            SpawnBolaDeFuego(spawnY);
+        }
+
+        // 2. Intentar spawnear Púas
+        if (spikesPrefab != null && Random.value < probabilidadPuas && spawnY - lastSpikesY >= minDistanciaEntrePuas)
         {
             SpawnPuas(spawnY);
             lastSpikesY = spawnY;
             spawnoPuas = true;
         }
 
-        // Si spawneó púas, reducir probabilidad de caja en esa fila
+        // 3. Generar Cajas, Sierras u Obstáculos normales
         List<int> columnasDisponibles = new List<int> { 0, 1, 2 };
         int cantidadObstaculos = Random.Range(1, 3);
 
@@ -131,19 +136,36 @@ public class ObstacleSpawner : MonoBehaviour
 
             float roll = Random.value;
 
-            // Si hay púas en esta fila, no spawnear cajas
             if (spawnoPuas && roll < probabilidadCaja)
             {
-                roll = probabilidadCaja; // Forzar a no ser caja
+                roll = probabilidadCaja; 
             }
 
-            if (roll < probabilidadCaja)
-                SpawnCaja(spawnPos);
-            else if (roll < probabilidadCaja + probabilidadSierra)
-                SpawnSierra(spawnPos);
-            else
-                SpawnObstaculo(spawnPos);
+            if (roll < probabilidadCaja) SpawnCaja(spawnPos);
+            else if (roll < probabilidadCaja + probabilidadSierra) SpawnSierra(spawnPos);
+            else SpawnObstaculo(spawnPos);
         }
+    }
+
+    void SpawnBolaDeFuego(float baseSpawnY)
+    {
+        // Seleccionamos 1 de los 3 carriles de forma aleatoria
+        int columnaElegida = Random.Range(0, 3);
+        float targetX = columnCenters[columnaElegida];
+
+        // Ya no calculamos la Y aquí, el aviso se pegará a la cámara por sí solo
+        // Lo instanciamos temporalmente en 0 en Y, el script MeteorWarning lo corregirá al instante
+        GameObject aviso = Instantiate(warningPrefab, new Vector3(targetX, 0f, 0f), Quaternion.identity);
+        
+        MeteorWarning scriptAviso = aviso.GetComponent<MeteorWarning>();
+        if (scriptAviso != null)
+        {
+            // Le pasamos el prefab del fuego, el tiempo de espera, la posición X y el sonido
+            scriptAviso.Inicializar(fireballPrefab, tiempoAdvertencia, targetX, warningSound);
+        }
+        
+        // Lo añadimos a la lista para no exceder el límite en pantalla
+        activeObstacles.Add(aviso);
     }
 
     void SpawnPuas(float spawnY)
