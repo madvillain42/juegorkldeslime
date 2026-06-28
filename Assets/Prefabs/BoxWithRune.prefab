@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6202416041036319772}
   - component: {fileID: 5439601739017448108}
   - component: {fileID: -1053464472679667059}
+  - component: {fileID: 7562458242288058455}
   m_Layer: 0
   m_Name: BoxWithRune
   m_TagString: Box
@@ -168,3 +169,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ObstacleAutoDestroy
   destroyOffsetBelow: 15
+--- !u!114 &7562458242288058455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5804730549814297105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1de7815746a844a8e8a266d65b67e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloatingEffect
+  speed: 3
+  amplitude: 0.15
