@@ -15,13 +15,16 @@ public class MeteorWarning : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Camera mainCam;
 
-    // Nueva firma de inicialización
+    [Header("Audio")]
+    [SerializeField] private AudioClip sonidoCaida;
+    [SerializeField] private float pitchCaida = 1.5f;
+
     public void Inicializar(GameObject fireball, float duration, float xPos, AudioClip warningSound)
     {
         projectilePrefab = fireball;
         warningDuration = duration;
         targetX = xPos;
-        mainCam = Camera.main; // Obtenemos la cámara principal
+        mainCam = Camera.main;
         
         spriteRenderer = GetComponent<SpriteRenderer>();
         
@@ -40,8 +43,6 @@ public class MeteorWarning : MonoBehaviour
 
     void Update()
     {
-        // Esto mantiene el aviso bloqueado en la columna correcta (X), 
-        // pero persiguiendo constantemente el borde superior de la cámara (Y).
         if (mainCam != null)
         {
             transform.position = new Vector3(targetX, mainCam.transform.position.y + offsetYDesdeCentro, 0f);
@@ -64,9 +65,16 @@ public class MeteorWarning : MonoBehaviour
 
         if (projectilePrefab != null)
         {
-            // El meteoro spawnea un poco más arriba de donde está el aviso para que entre cayendo con velocidad
             Vector3 spawnPos = new Vector3(targetX, transform.position.y + 6f, 0f);
-            Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+            GameObject meteoro = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+
+            if (sonidoCaida != null)
+            {
+                AudioSource tempAS = meteoro.AddComponent<AudioSource>();
+                tempAS.clip = sonidoCaida;
+                tempAS.pitch = pitchCaida;
+                tempAS.Play();
+            }
         }
 
         Destroy(gameObject);
