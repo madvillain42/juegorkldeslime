@@ -3,10 +3,44 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    // "public void" es obligatorio para que Unity lo detecte en el botón
+    [Header("Paneles")]
+    public GameObject panelMenuPrincipal;
+    public GameObject panelNiveles;
+
+    // ─── Menú Principal ───────────────────────────────────────────────────────
+
     public void IniciarJuego()
     {
-        // Cambia "Nivel1" por el nombre exacto de tu escena de juego si es diferente
         SceneManager.LoadScene("Nivel1");
+    }
+
+    public void AbrirNiveles()
+    {
+        panelMenuPrincipal.SetActive(false);
+        panelNiveles.SetActive(true);
+    }
+
+    public void Salir()
+    {
+        Application.Quit();
+        Debug.Log("[Menu] Salir");
+    }
+
+    // ─── Panel Niveles ────────────────────────────────────────────────────────
+
+    public void CargarNivel1()
+    {
+        SceneManager.LoadScene("Nivel1");
+    }
+
+    public void CargarNivel2()
+    {
+        SceneManager.LoadScene("Nivel2");
+    }
+
+    public void Volver()
+    {
+        panelNiveles.SetActive(false);
+        panelMenuPrincipal.SetActive(true);
     }
 }
