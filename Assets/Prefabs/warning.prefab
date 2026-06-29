@@ -105,3 +105,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeteorWarning
   offsetYDesdeCentro: 4.5
+  sonidoCaida: {fileID: 8300000, guid: dac05868d3ba46c4196a24184c85af23, type: 3}
