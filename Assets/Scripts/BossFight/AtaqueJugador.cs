@@ -9,12 +9,26 @@ public class AtaqueJugador : MonoBehaviour
     [Header("Balanceo")]
     public float danoPorRuna = 20f;
 
+    [Header("Daño Pasivo")]
+    public float danoPasivo = 1f;
+    public float intervaloDanoPasivo = 1f;
+
+    [Header("Sonidos")]
+    public AudioClip sonidoDanoPasivo;
+    public AudioClip sonidoGolpeRuna;
+
     [Header("Animaciones")]
-    public Animator animatorPlayer; // Dejado listo para tus futuras animaciones
+    public Animator animatorPlayer;
+
+    private float timerDanoPasivo = 0f;
+    private AudioSource audioSource;
 
     void Start()
     {
-        // El jugador se suscribe al evento de éxito del dibujo
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+
         if (runeSystem != null)
         {
             runeSystem.OnSuccess += RealizarGolpe;
@@ -27,27 +41,44 @@ public class AtaqueJugador : MonoBehaviour
 
     void OnDestroy()
     {
-        // Limpieza del evento si el jugador se destruye o cambia de escena
         if (runeSystem != null)
         {
             runeSystem.OnSuccess -= RealizarGolpe;
         }
     }
 
+    void Update()
+    {
+        if (bossHealth == null) return;
+
+        timerDanoPasivo += Time.deltaTime;
+
+        if (timerDanoPasivo >= intervaloDanoPasivo)
+        {
+            timerDanoPasivo = 0f;
+            bossHealth.TakeDamage(danoPasivo);
+
+            if (sonidoDanoPasivo != null)
+                audioSource.PlayOneShot(sonidoDanoPasivo);
+
+            Debug.Log($"[AtaqueJugador] Daño pasivo: -{danoPasivo} HP");
+        }
+    }
+
     private void RealizarGolpe()
     {
-        // --- AQUÍ IRÁ TU ANIMACIÓN EN EL FUTURO ---
         if (animatorPlayer != null)
         {
-            // Cuando tengas la animación, descomenta la línea de abajo y pon el nombre exacto de tu animación:
             // animatorPlayer.Play("GolpeRuna"); 
         }
 
-        // Aplicamos el daño directamente al jefe conectado
         if (bossHealth != null)
         {
             Debug.Log($"[Player] ¡Runa completada con éxito! Golpeando al jefe con {danoPorRuna} de daño.");
             bossHealth.TakeDamage(danoPorRuna);
+
+            if (sonidoGolpeRuna != null)
+                audioSource.PlayOneShot(sonidoGolpeRuna);
         }
         else
         {

@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
 
     public GameState CurrentState { get; private set; } = GameState.Climbing;
 
+    // Evento que dispara cuando el jugador muere
+    public event System.Action OnGameOver;
+
     // ─── Stats que viajan de la escalada a la bossfight ───────────────────────
     
     // Daño acumulado por pociones (+15% por caja)
@@ -39,6 +42,10 @@ public class GameManager : MonoBehaviour
     {
         CurrentState = newState;
         Debug.Log($"[GameManager] Estado cambiado a: {newState}");
+
+        // Disparar evento cuando el jugador muere
+        if (newState == GameState.GameOver)
+            OnGameOver?.Invoke();
     }
 
     // ─── Métodos para aplicar pociones ───────────────────────────────────────

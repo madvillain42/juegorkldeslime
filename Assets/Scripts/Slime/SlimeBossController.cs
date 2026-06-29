@@ -114,9 +114,14 @@ public class SlimeBossController : MonoBehaviour
 
     void Morir()
     {
-        Debug.Log("[SlimeBoss] El slime murió en la bossfight");
+    Debug.Log("[SlimeBoss] El slime murió en la bossfight");
 
-        if (GameManager.Instance != null)
+    // Mostrar pantalla de derrota directamente
+    BossResultManager resultManager = FindFirstObjectByType<BossResultManager>();
+    if (resultManager != null)
+        resultManager.MostrarDerrota();
+
+    if (GameManager.Instance != null)
         {
             GameManager.Instance.ResetStats();
             GameManager.Instance.ChangeState(GameState.GameOver);
